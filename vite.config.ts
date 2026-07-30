@@ -4,6 +4,12 @@ import react from '@vitejs/plugin-react'
 
 // https://vite.dev/config/
 export default defineConfig({
+  /*
+   * Relative asset paths, so the built app works from any directory on any
+   * static host — a project page served from /repo-name/ included — without
+   * needing to know the deploy URL at build time.
+   */
+  base: './',
   plugins: [react()],
   test: {
     /*

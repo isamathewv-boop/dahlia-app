@@ -16,7 +16,7 @@ const ITERATIONS = 1_000
 
 const data = {
   ...createEmptyData(),
-  profile: makeProfile({ name: 'Leanne' }),
+  profile: makeProfile({ name: 'Sam' }),
   mealLogs: [mealLog('2026-07-30')],
   checkIns: [checkIn('2026-07-30')],
 }
@@ -47,7 +47,7 @@ describe('round trip', () => {
     const envelope = await seal(passcode)
     const opened = await unlockEnvelope(envelope, passcode)
 
-    expect(opened!.data.profile!.name).toBe('Leanne')
+    expect(opened!.data.profile!.name).toBe('Sam')
   })
 })
 
@@ -74,7 +74,7 @@ describe('the ciphertext itself', () => {
     const blob = JSON.stringify(envelope)
 
     // The whole point: someone reading storage learns nothing.
-    expect(blob).not.toContain('Leanne')
+    expect(blob).not.toContain('Sam')
     expect(blob).not.toContain('fat-loss')
     expect(blob).not.toContain('oats')
     expect(blob).not.toContain('profile')

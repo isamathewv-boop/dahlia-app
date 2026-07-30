@@ -11,7 +11,7 @@ import {
 } from '../test/fixtures'
 
 const fullData = makeData({
-  profile: makeProfile({ name: 'Leanne' }),
+  profile: makeProfile({ name: 'Sam' }),
   cycleLogs: [cycleLog('2026-07-30', 'heavy')],
   symptomLogs: [symptomLog('2026-07-30', 'cramps', 4)],
   workoutLogs: [workoutLog('2026-07-30', { type: 'Cardio' })],
@@ -63,7 +63,7 @@ describe('parseImport — rejecting bad files', () => {
   })
 
   it('rejects a file where the profile is the wrong type', () => {
-    expect(parseImport('{"profile":"Leanne"}')).toBeNull()
+    expect(parseImport('{"profile":"Sam"}')).toBeNull()
   })
 
   it('accepts an explicitly null profile', () => {

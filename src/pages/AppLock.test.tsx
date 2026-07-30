@@ -47,7 +47,7 @@ async function turnOnLock(user: ReturnType<typeof userEvent.setup>) {
 
 describe('turning app lock on', () => {
   it('encrypts storage so the plaintext is no longer readable', async () => {
-    seed({ profile: makeProfile({ name: 'Leanne' }), mealLogs: [mealLog(todayISO())] })
+    seed({ profile: makeProfile({ name: 'Sam' }), mealLogs: [mealLog(todayISO())] })
     const { user } = mountSettingsOnly()
 
     await turnOnLock(user)
@@ -56,7 +56,7 @@ describe('turning app lock on', () => {
 
     // The thing this whole feature exists for.
     const onDisk = localStorage.getItem('dahlia.v1')!
-    expect(onDisk).not.toContain('Leanne')
+    expect(onDisk).not.toContain('Sam')
     expect(onDisk).not.toContain('oats')
     expect(onDisk).not.toContain(PASSCODE)
   })
@@ -128,7 +128,7 @@ describe('the lock screen', () => {
   })
 
   it('rejects the wrong passcode without revealing anything', async () => {
-    seed({ profile: makeProfile({ name: 'Leanne' }) })
+    seed({ profile: makeProfile({ name: 'Sam' }) })
     const first = mountSettingsOnly()
     await turnOnLock(first.user)
     await waitFor(() => expect(isEncryptedEnvelope(readRawStorage())).toBe(true))
@@ -142,11 +142,11 @@ describe('the lock screen', () => {
       expect(screen.getByText('That passcode did not work.')).toBeTruthy(),
     )
     expect(screen.getByRole('heading', { name: 'Dahlia is locked' })).toBeTruthy()
-    expect(screen.queryByText('Leanne')).toBeNull()
+    expect(screen.queryByText('Sam')).toBeNull()
   })
 
   it('opens the app again with the right passcode', async () => {
-    seed({ profile: makeProfile({ name: 'Leanne' }), mealLogs: [mealLog(todayISO())] })
+    seed({ profile: makeProfile({ name: 'Sam' }), mealLogs: [mealLog(todayISO())] })
     const first = mountSettingsOnly()
     await turnOnLock(first.user)
     await waitFor(() => expect(isEncryptedEnvelope(readRawStorage())).toBe(true))
@@ -157,7 +157,7 @@ describe('the lock screen', () => {
     await user.click(screen.getByRole('button', { name: 'Unlock' }))
 
     await waitFor(() =>
-      expect(screen.getByRole('heading', { name: 'Hi Leanne' })).toBeTruthy(),
+      expect(screen.getByRole('heading', { name: 'Hi Sam' })).toBeTruthy(),
     )
     // And the logs survived the round trip.
     expect(screen.getByText(/Meals: 1/)).toBeTruthy()
@@ -166,7 +166,7 @@ describe('the lock screen', () => {
 
 describe('turning app lock off', () => {
   it('writes readable data back', async () => {
-    seed({ profile: makeProfile({ name: 'Leanne' }) })
+    seed({ profile: makeProfile({ name: 'Sam' }) })
     const { user } = mountSettingsOnly()
 
     await turnOnLock(user)
@@ -175,13 +175,13 @@ describe('turning app lock off', () => {
     await user.click(screen.getByRole('button', { name: 'Turn off app lock' }))
 
     await waitFor(() => expect(isEncryptedEnvelope(readRawStorage())).toBe(false))
-    expect(localStorage.getItem('dahlia.v1')).toContain('Leanne')
+    expect(localStorage.getItem('dahlia.v1')).toContain('Sam')
   })
 })
 
 describe('locking mid-session', () => {
   it('seals the app again without losing anything', async () => {
-    seed({ profile: makeProfile({ name: 'Leanne' }) })
+    seed({ profile: makeProfile({ name: 'Sam' }) })
     const { user } = mount('/settings')
 
     await turnOnLock(user)
