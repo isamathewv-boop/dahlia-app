@@ -116,12 +116,15 @@ export default function Settings() {
       </div>
 
       <div style={s.card}>
-        <h2>Coach tone</h2>
+        {/* The heading names the control, so the select points at it rather
+            than repeating the words in a second visible label. */}
+        <h2 id="coachToneHeading">Coach tone</h2>
         {profile ? (
           <>
             <p style={s.muted}>How blunt Dahlia is with you.</p>
             <select
               id="coachTone"
+              aria-labelledby="coachToneHeading"
               value={profile.coachTone}
               onChange={(e) => handleToneChange(e.target.value as CoachTone)}
             >
