@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import type { ReactNode } from 'react'
 import type {
   AppData,
+  CoachMessage,
   DailyCheckIn,
   MealLog,
   SymptomLog,
@@ -99,6 +100,17 @@ export default function AppProvider({ children }: { children: ReactNode }) {
     }))
   }
 
+  function addCoachMessage(message: Omit<CoachMessage, 'id'>) {
+    setData((current) => ({
+      ...current,
+      coachMessages: [...current.coachMessages, { ...message, id: newId() }],
+    }))
+  }
+
+  function clearCoachMessages() {
+    setData((current) => ({ ...current, coachMessages: [] }))
+  }
+
   function symptomsOn(date: string) {
     return data.symptomLogs.filter((log) => log.date === date)
   }
@@ -124,6 +136,8 @@ export default function AppProvider({ children }: { children: ReactNode }) {
         deleteWorkoutLog,
         deleteMealLog,
         deleteCycleEntry,
+        addCoachMessage,
+        clearCoachMessages,
         symptomsOn,
         replaceAllData,
         resetAll,

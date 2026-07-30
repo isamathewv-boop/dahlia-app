@@ -16,6 +16,7 @@ import {
 import { formatDate, todayISO } from '../data/date'
 import { nextPeriodDate, PHASE_LABELS } from '../data/cycle'
 import { buildDailyPlan } from '../engine/plan'
+import { buildBriefing } from '../engine/dahlia'
 import * as s from '../ui/styles'
 
 export default function Home() {
@@ -66,6 +67,7 @@ export default function Home() {
   }
 
   const plan = buildDailyPlan(profile, app, today)
+  const briefing = buildBriefing(profile, app, today)
   const nextPeriod = nextPeriodDate(profile, cycleLogs, today)
 
   const todaysCycle = cycleLogs.find((log) => log.date === today)
@@ -272,7 +274,13 @@ export default function Home() {
 
       <div style={s.card}>
         <h2>Dahlia says</h2>
-        <p style={s.muted}>Coming in Step 4 — she'll speak from the plan above.</p>
+        <p>{briefing.push}</p>
+        {briefing.correction && (
+          <p>
+            <strong>One thing:</strong> {briefing.correction}
+          </p>
+        )}
+        <Link to="/dahlia">Talk to Dahlia</Link>
       </div>
 
       <div style={s.card}>

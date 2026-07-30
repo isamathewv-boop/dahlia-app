@@ -1,6 +1,7 @@
 import { createContext, useContext } from 'react'
 import type {
   AppData,
+  CoachMessage,
   DailyCheckIn,
   Flow,
   MealLog,
@@ -39,6 +40,9 @@ export interface AppState extends AppData {
   deleteMealLog: (id: string) => void
   deleteCycleEntry: (date: string) => void
 
+  addCoachMessage: (message: Omit<CoachMessage, 'id'>) => void
+  clearCoachMessages: () => void
+
   /** Everything logged for one date, for the dashboard. */
   symptomsOn: (date: string) => SymptomLog[]
 
@@ -57,6 +61,8 @@ export const AppContext = createContext<AppState>({
   deleteWorkoutLog: () => {},
   deleteMealLog: () => {},
   deleteCycleEntry: () => {},
+  addCoachMessage: () => {},
+  clearCoachMessages: () => {},
   symptomsOn: () => [],
   replaceAllData: () => {},
   resetAll: () => {},
