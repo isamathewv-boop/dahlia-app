@@ -12,7 +12,7 @@ import type {
   UserProfile,
   WorkoutLog,
 } from '../types'
-import { emptyData } from '../data/storage'
+import { createEmptyData } from '../data/storage'
 
 /** A plain, unremarkable profile. Override only what a test cares about. */
 export function makeProfile(overrides: Partial<UserProfile> = {}): UserProfile {
@@ -35,7 +35,7 @@ export function makeProfile(overrides: Partial<UserProfile> = {}): UserProfile {
 }
 
 export function makeData(overrides: Partial<AppData> = {}): AppData {
-  return { ...emptyData, ...overrides }
+  return { ...createEmptyData(), ...overrides }
 }
 
 export function cycleLog(date: string, flow: Flow): CycleLog {

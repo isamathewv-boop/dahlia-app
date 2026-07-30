@@ -10,7 +10,7 @@ import type {
   UserProfile,
   WorkoutLog,
 } from '../types'
-import { emptyData } from '../data/storage'
+import { createEmptyData } from '../data/storage'
 
 /** What the Cycle page sends when the user saves one day. */
 export interface CycleEntryInput {
@@ -42,11 +42,13 @@ export interface AppState extends AppData {
   /** Everything logged for one date, for the dashboard. */
   symptomsOn: (date: string) => SymptomLog[]
 
+  /** Replaces everything, for importing a previously exported file. */
+  replaceAllData: (data: AppData) => void
   resetAll: () => void
 }
 
 export const AppContext = createContext<AppState>({
-  ...emptyData,
+  ...createEmptyData(),
   saveProfile: () => {},
   saveCycleEntry: () => {},
   saveCheckIn: () => {},
@@ -56,6 +58,7 @@ export const AppContext = createContext<AppState>({
   deleteMealLog: () => {},
   deleteCycleEntry: () => {},
   symptomsOn: () => [],
+  replaceAllData: () => {},
   resetAll: () => {},
 })
 

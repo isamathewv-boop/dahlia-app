@@ -1,13 +1,14 @@
 import { useEffect, useState } from 'react'
 import type { ReactNode } from 'react'
 import type {
+  AppData,
   DailyCheckIn,
   MealLog,
   SymptomLog,
   UserProfile,
   WorkoutLog,
 } from '../types'
-import { clearData, emptyData, loadData, saveData } from '../data/storage'
+import { clearData, createEmptyData, loadData, saveData } from '../data/storage'
 import { newId } from '../data/date'
 import { AppContext } from './AppContext'
 import type { CycleEntryInput } from './AppContext'
@@ -102,9 +103,13 @@ export default function AppProvider({ children }: { children: ReactNode }) {
     return data.symptomLogs.filter((log) => log.date === date)
   }
 
+  function replaceAllData(imported: AppData) {
+    setData(imported)
+  }
+
   function resetAll() {
     clearData()
-    setData(emptyData)
+    setData(createEmptyData())
   }
 
   return (
@@ -120,6 +125,7 @@ export default function AppProvider({ children }: { children: ReactNode }) {
         deleteMealLog,
         deleteCycleEntry,
         symptomsOn,
+        replaceAllData,
         resetAll,
       }}
     >
