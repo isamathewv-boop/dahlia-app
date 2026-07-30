@@ -9,50 +9,15 @@ import type {
   UserProfile,
   WorkoutLevel,
 } from '../types'
-
-// The choices the user can pick from. Keeping them here (not typed by hand in
-// an input) is what lets the rule engine actually reason about the answers.
-const GOALS: { value: Goal; label: string }[] = [
-  { value: 'fat-loss', label: 'Fat loss' },
-  { value: 'muscle-gain', label: 'Muscle gain' },
-  { value: 'maintenance', label: 'Maintenance' },
-  { value: 'energy', label: 'More energy' },
-  { value: 'hormone-support', label: 'Hormone / cycle support' },
-]
-
-const LEVELS: { value: WorkoutLevel; label: string }[] = [
-  { value: 'beginner', label: 'Beginner' },
-  { value: 'intermediate', label: 'Intermediate' },
-  { value: 'advanced', label: 'Advanced' },
-]
-
-const TIMES: TimeAvailable[] = [15, 30, 45, 60]
-
-const EQUIPMENT: { value: Equipment; label: string }[] = [
-  { value: 'bodyweight', label: 'Bodyweight only' },
-  { value: 'bands', label: 'Resistance bands' },
-  { value: 'dumbbells', label: 'Dumbbells at home' },
-  { value: 'full-gym', label: 'Full gym' },
-]
-
-const TONES: { value: CoachTone; label: string }[] = [
-  { value: 'strict', label: 'Strict — no excuses' },
-  { value: 'balanced', label: 'Balanced' },
-  { value: 'gentle', label: 'Gentle' },
-]
-
-const CONDITIONS = [
-  'PCOS',
-  'Thyroid',
-  'Anemia',
-  'Endometriosis',
-  'Diabetes',
-  'Digestive issues',
-  'Injury',
-]
-
-const row = { marginBottom: '10px' }
-const section = { marginBottom: '20px' }
+import {
+  CONDITIONS,
+  EQUIPMENT,
+  GOALS,
+  LEVELS,
+  TIMES,
+  TONES,
+} from '../data/options'
+import { row, section } from '../ui/styles'
 
 export default function Onboarding() {
   const { profile, saveProfile } = useApp()
