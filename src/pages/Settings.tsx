@@ -5,17 +5,25 @@ import type { CoachTone } from '../types'
 import { TONES } from '../data/options'
 import { parseImport, serializeData } from '../data/storage'
 import { todayISO } from '../data/date'
+import {
+  notificationPermission,
+  notificationsSupported,
+} from '../ui/useReminders'
 import * as s from '../ui/styles'
 
 export default function Settings() {
   const app = useApp()
-  const { profile, saveProfile, replaceAllData, resetAll } = app
+  const { profile, saveProfile, replaceAllData, resetAll, reminders, setReminders } =
+    app
 
   // Destructive and replacing actions both need a deliberate second click.
   const [confirmingDelete, setConfirmingDelete] = useState(false)
   const [importError, setImportError] = useState('')
   const [importNotice, setImportNotice] = useState('')
   const fileInput = useRef<HTMLInputElement>(null)
+
+  // Held in state so the copy updates the moment the browser prompt resolves.
+  const [permission, setPermission] = useState(notificationPermission)
 
   const counts = [
     { label: 'Cycle days', value: app.cycleLogs.length },
@@ -61,6 +69,20 @@ export default function Settings() {
 
     replaceAllData(imported)
     setImportNotice('Import done. Everything was replaced with the file.')
+  }
+
+  function handleRemindersEnabled(enabled: boolean) {
+    // Clear the delivery log when switching off, so re-enabling later in the
+    // same day can still nudge.
+    setReminders({ ...reminders, enabled, lastFired: enabled ? reminders.lastFired : [] })
+  }
+
+  async function handleAskNotifications() {
+    if (!notificationsSupported()) return
+    // Must be inside a click handler — browsers reject permission requests
+    // that aren't tied to a user gesture.
+    const result = await Notification.requestPermission()
+    setPermission(result)
   }
 
   function handleToneChange(tone: CoachTone) {
@@ -192,9 +214,95 @@ export default function Settings() {
       </div>
 
       <div style={s.card}>
+        <h2>Reminders</h2>
+        <p style={s.muted}>
+          A nudge to check in, and another in the evening if the day is still
+          blank. Both disappear on their own once you have done the thing.
+        </p>
+
+        <label>
+          <input
+            type="checkbox"
+            checked={reminders.enabled}
+            onChange={(e) => handleRemindersEnabled(e.target.checked)}
+          />{' '}
+          Remind me
+        </label>
+
+        {reminders.enabled && (
+          <>
+            <div style={{ ...s.row, marginTop: '12px' }}>
+              <label htmlFor="checkInTime">Morning check-in</label>
+              <br />
+              <input
+                id="checkInTime"
+                type="time"
+                value={reminders.checkInTime}
+                onChange={(e) =>
+                  setReminders({ ...reminders, checkInTime: e.target.value })
+                }
+              />
+            </div>
+
+            <div style={s.row}>
+              <label htmlFor="eveningTime">Evening, if nothing is logged</label>
+              <br />
+              <input
+                id="eveningTime"
+                type="time"
+                value={reminders.eveningTime}
+                onChange={(e) =>
+                  setReminders({ ...reminders, eveningTime: e.target.value })
+                }
+              />
+            </div>
+
+            <p style={s.muted}>
+              <strong>Reminders only appear while Dahlia is open.</strong> Your
+              data never leaves this device, and a page with no server behind it
+              cannot wake itself up to notify you. Delivering notifications with
+              the app closed would mean sending your logs to a push service, so
+              it is not built.
+            </p>
+
+            {permission === 'unsupported' ? (
+              <p style={s.muted}>
+                This browser has no notification support, so reminders show as a
+                banner in the app.
+              </p>
+            ) : permission === 'granted' ? (
+              <p style={s.muted}>
+                System notifications are on. You will also see a banner in the
+                app.
+              </p>
+            ) : permission === 'denied' ? (
+              <p style={s.muted}>
+                Notifications are blocked for this site in your browser
+                settings, so reminders show as a banner in the app instead.
+              </p>
+            ) : (
+              <>
+                <p style={s.muted}>
+                  Reminders currently show as a banner in the app. Allow
+                  notifications and they can pop up while another tab is
+                  focused.
+                </p>
+                <button
+                  type="button"
+                  data-variant="quiet"
+                  onClick={handleAskNotifications}
+                >
+                  Allow notifications
+                </button>
+              </>
+            )}
+          </>
+        )}
+      </div>
+
+      <div style={s.card}>
         <h2>Not built yet</h2>
         <ul style={s.muted}>
-          <li>Reminders and notifications</li>
           <li>App lock</li>
           <li>Units — nothing in the app measures weight or height yet</li>
         </ul>

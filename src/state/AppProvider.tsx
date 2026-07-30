@@ -5,6 +5,7 @@ import type {
   CoachMessage,
   DailyCheckIn,
   MealLog,
+  ReminderSettings,
   SymptomLog,
   UserProfile,
   WorkoutLog,
@@ -111,6 +112,10 @@ export default function AppProvider({ children }: { children: ReactNode }) {
     setData((current) => ({ ...current, coachMessages: [] }))
   }
 
+  function setReminders(reminders: ReminderSettings) {
+    setData((current) => ({ ...current, reminders }))
+  }
+
   function symptomsOn(date: string) {
     return data.symptomLogs.filter((log) => log.date === date)
   }
@@ -138,6 +143,7 @@ export default function AppProvider({ children }: { children: ReactNode }) {
         deleteCycleEntry,
         addCoachMessage,
         clearCoachMessages,
+        setReminders,
         symptomsOn,
         replaceAllData,
         resetAll,

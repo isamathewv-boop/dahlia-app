@@ -22,6 +22,12 @@ export function createEmptyData(): AppData {
     mealLogs: [],
     checkIns: [],
     coachMessages: [],
+    reminders: {
+      enabled: false,
+      checkInTime: '08:00',
+      eveningTime: '20:00',
+      lastFired: [],
+    },
   }
 }
 

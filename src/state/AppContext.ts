@@ -5,6 +5,7 @@ import type {
   DailyCheckIn,
   Flow,
   MealLog,
+  ReminderSettings,
   Severity,
   Symptom,
   SymptomLog,
@@ -43,6 +44,8 @@ export interface AppState extends AppData {
   addCoachMessage: (message: Omit<CoachMessage, 'id'>) => void
   clearCoachMessages: () => void
 
+  setReminders: (settings: ReminderSettings) => void
+
   /** Everything logged for one date, for the dashboard. */
   symptomsOn: (date: string) => SymptomLog[]
 
@@ -63,6 +66,7 @@ export const AppContext = createContext<AppState>({
   deleteCycleEntry: () => {},
   addCoachMessage: () => {},
   clearCoachMessages: () => {},
+  setReminders: () => {},
   symptomsOn: () => [],
   replaceAllData: () => {},
   resetAll: () => {},

@@ -112,6 +112,21 @@ export interface CoachMessage {
   timestamp: string // ISO timestamp
 }
 
+// ---------- Reminders ----------
+
+export interface ReminderSettings {
+  enabled: boolean
+  /** HH:MM local time to nudge for the morning check-in. */
+  checkInTime: string
+  /** HH:MM local time to nudge if the day has nothing logged. */
+  eveningTime: string
+  /**
+   * `${date}:${kind}` keys already delivered, so a reminder fires once a day
+   * rather than on every tick. Pruned to today on each write.
+   */
+  lastFired: string[]
+}
+
 // ---------- Everything the app stores ----------
 
 export interface AppData {
@@ -122,4 +137,5 @@ export interface AppData {
   mealLogs: MealLog[]
   checkIns: DailyCheckIn[]
   coachMessages: CoachMessage[]
+  reminders: ReminderSettings
 }

@@ -7,6 +7,7 @@ import Diet from './pages/Diet'
 import Dahlia from './pages/Dahlia'
 import Progress from './pages/Progress'
 import Settings from './pages/Settings'
+import ReminderBanner from './components/ReminderBanner'
 
 const PAGES = [
   { to: '/', label: 'Home' },
@@ -33,6 +34,8 @@ function App() {
           </NavLink>
         ))}
       </nav>
+
+      <ReminderBanner />
 
       <main>
         <Routes>
