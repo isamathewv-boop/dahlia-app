@@ -55,10 +55,10 @@ export function typeFromFocus(focus: Focus): string {
 }
 
 function chooseFocus(
-  profile: UserProfile,
   readiness: Readiness,
   phase: Phase | null,
   recentWorkouts: WorkoutLog[],
+  minutesAvailable: number,
 ): Focus {
   // Nothing overrides a body that isn't ready.
   if (readiness.band === 'low') return 'recovery'
@@ -74,8 +74,9 @@ function chooseFocus(
   if (lastFocus === 'upper') return 'lower'
   if (lastFocus === 'lower') return 'upper'
 
-  // Short sessions get more done as full body.
-  return profile.timeAvailable <= 15 ? 'full-body' : 'upper'
+  // Short sessions get more done as full body. Uses today's actual free time,
+  // not the usual figure from onboarding.
+  return minutesAvailable <= 15 ? 'full-body' : 'upper'
 }
 
 /** Sets and reps from goal, level and how hard we're going today. */
@@ -183,7 +184,7 @@ export function buildWorkout(
   minutesAvailable: number,
   date: string,
 ): WorkoutPlan {
-  const focus = chooseFocus(profile, readiness, phase, recentWorkouts)
+  const focus = chooseFocus(readiness, phase, recentWorkouts, minutesAvailable)
   const intensity = chooseIntensity(readiness)
 
   // No jumping when readiness is down or an injury is on file.
