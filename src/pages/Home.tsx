@@ -7,21 +7,19 @@ import {
   EQUIPMENT_LABELS,
   FLOW_LABELS,
   GOAL_LABELS,
+  INTENSITY_LABELS,
   LEVEL_LABELS,
   SCALE,
   SEVERITY_LABELS,
   TIMES,
 } from '../data/options'
 import { formatDate, todayISO } from '../data/date'
-import {
-  currentPhase,
-  cycleDay,
-  nextPeriodDate,
-  PHASE_LABELS,
-} from '../data/cycle'
+import { nextPeriodDate, PHASE_LABELS } from '../data/cycle'
+import { buildDailyPlan } from '../engine/plan'
 import * as s from '../ui/styles'
 
 export default function Home() {
+  const app = useApp()
   const {
     profile,
     cycleLogs,
@@ -30,7 +28,7 @@ export default function Home() {
     checkIns,
     saveCheckIn,
     symptomsOn,
-  } = useApp()
+  } = app
 
   const today = todayISO()
   const existingCheckIn = checkIns.find((c) => c.date === today)
@@ -67,9 +65,8 @@ export default function Home() {
     })
   }
 
-  const day = cycleDay(profile, cycleLogs)
-  const phase = currentPhase(profile, cycleLogs)
-  const nextPeriod = nextPeriodDate(profile, cycleLogs)
+  const plan = buildDailyPlan(profile, app, today)
+  const nextPeriod = nextPeriodDate(profile, cycleLogs, today)
 
   const todaysCycle = cycleLogs.find((log) => log.date === today)
   const todaysSymptoms = symptomsOn(today)
@@ -82,10 +79,10 @@ export default function Home() {
 
       <div style={s.card}>
         <h2>Today — {formatDate(today)}</h2>
-        {day !== null ? (
+        {plan.cycleDay !== null ? (
           <p>
-            Cycle day {day}
-            {phase ? ` · ${PHASE_LABELS[phase]}` : ''}
+            Cycle day {plan.cycleDay}
+            {plan.phase ? ` · ${PHASE_LABELS[plan.phase]}` : ''}
             {nextPeriod ? ` · next period around ${formatDate(nextPeriod)}` : ''}
           </p>
         ) : (
@@ -96,11 +93,77 @@ export default function Home() {
         )}
       </div>
 
+      {plan.safety.length > 0 && (
+        <div style={{ ...s.card, borderColor: '#c66', background: '#fff8f8' }}>
+          <h2>Read this first</h2>
+          <ul>
+            {plan.safety.map((note) => (
+              <li key={note}>{note}</li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      <div style={{ ...s.card, borderWidth: '2px' }}>
+        <h2>Do this next</h2>
+        <p>{plan.nextAction}</p>
+      </div>
+
+      <div style={s.card}>
+        <h2>Readiness — {plan.readiness.score}/100</h2>
+        <p>
+          {plan.readiness.band === 'low'
+            ? 'Low. Today is for recovery.'
+            : plan.readiness.band === 'moderate'
+              ? 'Moderate. Train, but leave something in the tank.'
+              : 'Good. You can push today.'}
+        </p>
+        {plan.readiness.reasons.length > 0 && (
+          <ul style={s.muted}>
+            {plan.readiness.reasons.map((reason) => (
+              <li key={reason}>{reason}</li>
+            ))}
+          </ul>
+        )}
+      </div>
+
+      <div style={s.card}>
+        <h2>Today's workout</h2>
+        <p>
+          <strong>{plan.workout.title}</strong>
+          <br />
+          <span style={s.muted}>
+            {INTENSITY_LABELS[plan.workout.intensity]} intensity ·{' '}
+            {plan.workout.note}
+          </span>
+        </p>
+        <ul>
+          {plan.workout.exercises.map((exercise) => (
+            <li key={exercise.name}>
+              {exercise.name} — {exercise.prescription}
+            </li>
+          ))}
+        </ul>
+        <Link to="/workouts">Log it</Link>
+      </div>
+
+      <div style={s.card}>
+        <h2>Food focus</h2>
+        <p>
+          <strong>{plan.nutrition.headline}</strong>
+        </p>
+        <ul>
+          {plan.nutrition.points.map((point) => (
+            <li key={point}>{point}</li>
+          ))}
+        </ul>
+        <Link to="/diet">Log a meal</Link>
+      </div>
+
       <form onSubmit={handleCheckIn} style={s.card}>
         <h2>Daily check-in</h2>
         <p style={s.muted}>
-          This is what today's plan will be built from once the rule engine
-          exists.
+          The plan above is built from these. Change them and it changes.
         </p>
 
         <div style={s.row}>
@@ -192,23 +255,24 @@ export default function Home() {
             — <Link to="/cycle">log</Link>
           </li>
           <li>
-            Workouts: {todaysWorkouts.length} —{' '}
-            <Link to="/workouts">log</Link>
+            Workouts: {todaysWorkouts.length} — <Link to="/workouts">log</Link>
           </li>
           <li>
             Meals: {todaysMeals.length} — <Link to="/diet">log</Link>
+          </li>
+          <li style={s.muted}>
+            {plan.adherence.completedLast7Days} session
+            {plan.adherence.completedLast7Days === 1 ? '' : 's'} in the last 7
+            days
+            {plan.adherence.daysSinceLastWorkout !== null &&
+              ` · last one ${plan.adherence.daysSinceLastWorkout} day${plan.adherence.daysSinceLastWorkout === 1 ? '' : 's'} ago`}
           </li>
         </ul>
       </div>
 
       <div style={s.card}>
-        <h2>Today's plan</h2>
-        <p style={s.muted}>Coming in Step 3 — the rule engine.</p>
-      </div>
-
-      <div style={s.card}>
         <h2>Dahlia says</h2>
-        <p style={s.muted}>Coming in Step 4.</p>
+        <p style={s.muted}>Coming in Step 4 — she'll speak from the plan above.</p>
       </div>
 
       <div style={s.card}>

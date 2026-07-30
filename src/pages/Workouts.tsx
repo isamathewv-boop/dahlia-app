@@ -3,15 +3,27 @@ import { useApp } from '../state/AppContext'
 import type { Intensity } from '../types'
 import { INTENSITIES, INTENSITY_LABELS, WORKOUT_TYPES } from '../data/options'
 import { addDays, formatDate, todayISO } from '../data/date'
+import { buildDailyPlan } from '../engine/plan'
+import { typeFromFocus } from '../engine/workout'
 import * as s from '../ui/styles'
 
 export default function Workouts() {
-  const { workoutLogs, addWorkoutLog, deleteWorkoutLog } = useApp()
+  const app = useApp()
+  const { profile, workoutLogs, addWorkoutLog, deleteWorkoutLog } = app
+
+  // Today's assigned session, so the form starts pre-filled with it.
+  const plan = profile ? buildDailyPlan(profile, app) : null
 
   const [date, setDate] = useState(todayISO())
-  const [type, setType] = useState(WORKOUT_TYPES[0])
-  const [durationMinutes, setDurationMinutes] = useState('30')
-  const [intensity, setIntensity] = useState<Intensity>('moderate')
+  const [type, setType] = useState(
+    plan ? typeFromFocus(plan.workout.focus) : WORKOUT_TYPES[0],
+  )
+  const [durationMinutes, setDurationMinutes] = useState(
+    String(plan?.workout.durationMinutes ?? 30),
+  )
+  const [intensity, setIntensity] = useState<Intensity>(
+    plan?.workout.intensity ?? 'moderate',
+  )
   const [completed, setCompleted] = useState(true)
   const [notes, setNotes] = useState('')
 
@@ -27,7 +39,6 @@ export default function Workouts() {
     })
     // Clear the parts that change per entry, keep the date.
     setNotes('')
-    setDurationMinutes('30')
   }
 
   // Newest first.
@@ -41,6 +52,30 @@ export default function Workouts() {
   return (
     <div style={s.page}>
       <h1>Workouts</h1>
+
+      {plan && (
+        <div style={s.card}>
+          <h2>Today's session</h2>
+          <p>
+            <strong>{plan.workout.title}</strong>
+            <br />
+            <span style={s.muted}>
+              {INTENSITY_LABELS[plan.workout.intensity]} intensity ·{' '}
+              {plan.workout.note}
+            </span>
+          </p>
+          <ul>
+            {plan.workout.exercises.map((exercise) => (
+              <li key={exercise.name}>
+                {exercise.name} — {exercise.prescription}
+              </li>
+            ))}
+          </ul>
+          <p style={s.muted}>
+            The form below is already filled in for this session.
+          </p>
+        </div>
+      )}
 
       <div style={s.card}>
         <h2>This week</h2>
