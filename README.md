@@ -1,75 +1,81 @@
-# React + TypeScript + Vite
+# Dahlia
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A private period, food and training tracker with a strict coach.
 
-Currently, two official plugins are available:
+Everything is stored on your own device. There are no accounts, no server, no
+analytics, and nothing is ever uploaded — which is also why there is no
+password reset and no sync.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+**Not medical advice.** Cycle predictions are estimates from your own averages.
+They are not a contraceptive method and not a pregnancy test.
 
-## React Compiler
+## What it does
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- **Cycle** — flow, symptoms with severity, notes; cycle day, phase and a next
+  period estimate
+- **Workouts** — a session generated from your goal, equipment, experience and
+  how much time you actually have today
+- **Diet** — meals, with guidance shaped by goal, cycle phase and any
+  conditions on file
+- **Home** — a daily check-in (sleep, energy, soreness, minutes free) that the
+  whole plan is built from
+- **Dahlia** — a coach that speaks from your logs, in one of three tones
+- **Progress** — streak, weekly and 28-day stats, training trends, cycle
+  patterns
+- **Settings** — export, import, delete everything, reminders, app lock
 
-## Expanding the ESLint configuration
+## How it decides things
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+The logic is a rule engine, not a model. Readiness is scored from sleep,
+energy, soreness, symptoms and cycle phase; that score then drives the workout,
+the food guidance and the single next action. Low readiness forces recovery
+regardless of goal or coach tone.
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+Safety notes are never softened by tone. Severe symptoms escalate to "see a
+doctor" in every setting, and the reply to overeating never prescribes exercise
+as compensation.
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+No calorie or gram targets are invented, because the app never asks your
+weight.
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+## Privacy
 
+- Stored in your browser's local storage, on one device
+- **Export** writes a readable JSON file you own; **import** restores it
+- **Delete** wipes everything
+- **App lock** encrypts the whole store with a passcode (PBKDF2-SHA256 at
+  310,000 rounds, AES-GCM). The passcode is never stored, so there is no
+  recovery if you forget it — export a copy first
+
+## Running it
+
+```bash
+npm install
+npm run dev
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+| Command | What it does |
+| --- | --- |
+| `npm run dev` | Dev server |
+| `npm run build` | Production build into `dist/` |
+| `npm test` | Full test suite |
+| `npm run lint` | ESLint |
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+The build uses relative asset paths and hash routing, so `dist/` can be dropped
+on any static host, including a subdirectory, with no server configuration. A
+service worker caches the app shell so it opens without a connection.
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+## Tests
 
+```bash
+npm test
 ```
+
+Logic tests run in Node; page tests opt into jsdom per file. They cover the
+cycle maths, the rule engine, the coach's safety boundaries, encryption, and
+the pages themselves through the real state provider.
+
+## Stack
+
+React, TypeScript, Vite, React Router, Vitest, React Testing Library. No UI
+framework and no state library — plain CSS custom properties and React context.
