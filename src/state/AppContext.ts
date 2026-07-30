@@ -46,6 +46,18 @@ export interface AppState extends AppData {
 
   setReminders: (settings: ReminderSettings) => void
 
+  // ---------- App lock ----------
+
+  /** True when a passcode is set and has not been entered this session. */
+  locked: boolean
+  /** True when a passcode is set and the vault is currently open. */
+  lockEnabled: boolean
+  /** Resolves false for a wrong passcode. */
+  unlock: (passcode: string) => Promise<boolean>
+  enableLock: (passcode: string) => Promise<void>
+  disableLock: () => void
+  lockNow: () => void
+
   /** Everything logged for one date, for the dashboard. */
   symptomsOn: (date: string) => SymptomLog[]
 
@@ -67,6 +79,12 @@ export const AppContext = createContext<AppState>({
   addCoachMessage: () => {},
   clearCoachMessages: () => {},
   setReminders: () => {},
+  locked: false,
+  lockEnabled: false,
+  unlock: async () => false,
+  enableLock: async () => {},
+  disableLock: () => {},
+  lockNow: () => {},
   symptomsOn: () => [],
   replaceAllData: () => {},
   resetAll: () => {},

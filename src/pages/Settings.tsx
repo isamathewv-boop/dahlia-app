@@ -4,6 +4,7 @@ import { useApp } from '../state/AppContext'
 import type { CoachTone } from '../types'
 import { TONES } from '../data/options'
 import { parseImport, serializeData } from '../data/storage'
+import { cryptoAvailable } from '../data/crypto'
 import { todayISO } from '../data/date'
 import {
   notificationPermission,
@@ -13,8 +14,18 @@ import * as s from '../ui/styles'
 
 export default function Settings() {
   const app = useApp()
-  const { profile, saveProfile, replaceAllData, resetAll, reminders, setReminders } =
-    app
+  const {
+    profile,
+    saveProfile,
+    replaceAllData,
+    resetAll,
+    reminders,
+    setReminders,
+    lockEnabled,
+    enableLock,
+    disableLock,
+    lockNow,
+  } = app
 
   // Destructive and replacing actions both need a deliberate second click.
   const [confirmingDelete, setConfirmingDelete] = useState(false)
@@ -24,6 +35,12 @@ export default function Settings() {
 
   // Held in state so the copy updates the moment the browser prompt resolves.
   const [permission, setPermission] = useState(notificationPermission)
+
+  const [newPasscode, setNewPasscode] = useState('')
+  const [confirmPasscode, setConfirmPasscode] = useState('')
+  const [acceptedLossRisk, setAcceptedLossRisk] = useState(false)
+  const [lockError, setLockError] = useState('')
+  const [lockBusy, setLockBusy] = useState(false)
 
   const counts = [
     { label: 'Cycle days', value: app.cycleLogs.length },
@@ -83,6 +100,38 @@ export default function Settings() {
     // that aren't tied to a user gesture.
     const result = await Notification.requestPermission()
     setPermission(result)
+  }
+
+  async function handleEnableLock(e: React.FormEvent) {
+    e.preventDefault()
+    setLockError('')
+
+    if (newPasscode.length < 6) {
+      setLockError('Use at least 6 characters.')
+      return
+    }
+    if (newPasscode !== confirmPasscode) {
+      setLockError('The two passcodes do not match.')
+      return
+    }
+    if (!acceptedLossRisk) {
+      setLockError('Tick the box to confirm you understand there is no reset.')
+      return
+    }
+
+    setLockBusy(true)
+    await enableLock(newPasscode)
+
+    // Never leave the passcode sitting in component state.
+    setNewPasscode('')
+    setConfirmPasscode('')
+    setAcceptedLossRisk(false)
+    setLockBusy(false)
+  }
+
+  function handleDisableLock() {
+    disableLock()
+    setLockError('')
   }
 
   function handleToneChange(tone: CoachTone) {
@@ -304,9 +353,100 @@ export default function Settings() {
       </div>
 
       <div style={s.card}>
+        <h2 id="appLockHeading">App lock</h2>
+
+        {!cryptoAvailable() ? (
+          <p style={s.muted}>
+            This browser has no Web Crypto support, so encryption is
+            unavailable here.
+          </p>
+        ) : lockEnabled ? (
+          <>
+            <p>
+              Your logs are encrypted on this device. They are unreadable
+              without your passcode, including to anything poking at browser
+              storage.
+            </p>
+            <button type="button" data-variant="quiet" onClick={lockNow}>
+              Lock now
+            </button>{' '}
+            <button
+              type="button"
+              data-variant="quiet"
+              onClick={handleDisableLock}
+            >
+              Turn off app lock
+            </button>
+          </>
+        ) : (
+          <>
+            <p style={s.muted}>
+              Encrypts everything on this device with a passcode you choose.
+            </p>
+
+            <div style={s.cardDanger}>
+              <p>
+                <strong>There is no way to reset this passcode.</strong> No
+                server holds a copy — that is exactly why nobody else can read
+                your logs, and it means forgetting it loses them permanently.
+              </p>
+              <p style={s.muted}>
+                Export a copy first. The exported file is not encrypted, so keep
+                it somewhere you trust.
+              </p>
+            </div>
+
+            <form onSubmit={handleEnableLock}>
+              <div style={s.row}>
+                <label htmlFor="newPasscode">Passcode (at least 6)</label>
+                <br />
+                <input
+                  id="newPasscode"
+                  type="password"
+                  autoComplete="new-password"
+                  value={newPasscode}
+                  onChange={(e) => setNewPasscode(e.target.value)}
+                  style={s.input}
+                />
+              </div>
+
+              <div style={s.row}>
+                <label htmlFor="confirmPasscode">Type it again</label>
+                <br />
+                <input
+                  id="confirmPasscode"
+                  type="password"
+                  autoComplete="new-password"
+                  value={confirmPasscode}
+                  onChange={(e) => setConfirmPasscode(e.target.value)}
+                  style={s.input}
+                />
+              </div>
+
+              <label>
+                <input
+                  type="checkbox"
+                  checked={acceptedLossRisk}
+                  onChange={(e) => setAcceptedLossRisk(e.target.checked)}
+                />{' '}
+                I understand my data is gone if I forget this
+              </label>
+
+              {lockError && <p style={s.dangerText}>{lockError}</p>}
+
+              <p style={{ marginTop: '12px' }}>
+                <button type="submit" disabled={lockBusy}>
+                  {lockBusy ? 'Encrypting…' : 'Turn on app lock'}
+                </button>
+              </p>
+            </form>
+          </>
+        )}
+      </div>
+
+      <div style={s.card}>
         <h2>Not built yet</h2>
         <ul style={s.muted}>
-          <li>App lock</li>
           <li>Units — nothing in the app measures weight or height yet</li>
         </ul>
       </div>

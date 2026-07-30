@@ -1,4 +1,5 @@
 import type { AppData } from '../types'
+import type { EncryptedEnvelope } from './crypto'
 
 // Local-first storage. Health data never leaves this device.
 // Bump the version in the key if the shape of AppData ever changes in a way
@@ -49,6 +50,25 @@ export function saveData(data: AppData): void {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data))
   } catch {
     // Storage full or blocked (private mode). Nothing useful to do here.
+  }
+}
+
+/** Whatever is in storage, parsed but not interpreted. */
+export function readRawStorage(): unknown {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY)
+    return raw ? JSON.parse(raw) : null
+  } catch {
+    return null
+  }
+}
+
+/** Replaces the store with an encrypted envelope. */
+export function saveEnvelope(envelope: EncryptedEnvelope): void {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(envelope))
+  } catch {
+    // ignore
   }
 }
 
