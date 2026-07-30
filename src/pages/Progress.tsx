@@ -17,9 +17,14 @@ function Stat({ value, label }: { value: string; label: string }) {
   )
 }
 
+/*
+ * 150px means two columns on a phone and four on a wide screen. A smaller
+ * minimum fitted three columns, which left a single orphaned stat on its own
+ * row for every four-stat group.
+ */
 const statRow = {
   display: 'grid',
-  gridTemplateColumns: 'repeat(auto-fit, minmax(110px, 1fr))',
+  gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
   gap: '16px',
 }
 
@@ -77,7 +82,7 @@ export default function Progress() {
     <div style={s.page}>
       <h1>Progress</h1>
 
-      <div style={{ ...s.card, borderWidth: '2px' }}>
+      <div style={s.cardEmphasis}>
         <h2>This week</h2>
         <p>{takeaway}</p>
       </div>

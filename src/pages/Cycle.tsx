@@ -227,7 +227,7 @@ export default function Cycle() {
                   <span style={{ whiteSpace: 'nowrap' }}>
                     <button
                       type="button"
-                      style={s.linkButton}
+                      data-variant="link"
                       onClick={() => loadDate(log.date)}
                     >
                       Edit
@@ -235,7 +235,8 @@ export default function Cycle() {
                     {' · '}
                     <button
                       type="button"
-                      style={s.linkButton}
+                      data-variant="link"
+                      data-tone="danger"
                       onClick={() => deleteCycleEntry(log.date)}
                     >
                       Delete

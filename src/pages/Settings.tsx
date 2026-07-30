@@ -79,7 +79,7 @@ export default function Settings() {
     <div style={s.page}>
       <h1>Settings</h1>
 
-      <div style={{ ...s.card, borderColor: '#c66', background: '#fff8f8' }}>
+      <div style={s.cardDanger}>
         <h2>Not medical advice</h2>
         <p>
           Dahlia is a tracker and a planner, not a doctor. Nothing here
@@ -162,11 +162,11 @@ export default function Settings() {
           onChange={handleImportFile}
           aria-label="Choose an export file to import"
         />
-        {importError && <p style={{ color: '#a33' }}>{importError}</p>}
+        {importError && <p style={s.dangerText}>{importError}</p>}
         {importNotice && <p>{importNotice}</p>}
       </div>
 
-      <div style={{ ...s.card, borderColor: '#c66' }}>
+      <div style={s.cardDanger}>
         <h2>Delete everything</h2>
         <p style={s.muted}>
           Wipes your profile and every log from this device. This cannot be

@@ -1,111 +1,313 @@
+/*
+ * Design tokens and base styles.
+ *
+ * Every colour pair used for text or for a control's boundary was checked with
+ * a WCAG contrast script in BOTH modes before being committed here — body text
+ * at 4.5:1 or better, control borders and focus rings at 3:1 or better. The
+ * dark values are chosen for the dark surface, not derived by inverting the
+ * light ones.
+ */
+
 :root {
-  --text: #6b6375;
-  --text-h: #08060d;
-  --bg: #fff;
-  --border: #e5e4e7;
-  --code-bg: #f4f3ec;
-  --accent: #aa3bff;
-  --accent-bg: rgba(170, 59, 255, 0.1);
-  --accent-border: rgba(170, 59, 255, 0.5);
-  --social-bg: rgba(244, 243, 236, 0.5);
-  --shadow:
-    rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
+  color-scheme: light;
+
+  /* Surfaces */
+  --surface-page: #ffffff;
+  --surface-card: #ffffff;
+  --surface-sunken: #f4f4f6;
+
+  /* Ink */
+  --text: #3d3b45;
+  --text-strong: #14131a;
+  --text-muted: #5f5c6b;
+
+  /* Lines. --border is decorative; --border-strong outlines controls. */
+  --border: #e3e2e6;
+  --border-strong: #84818c;
+
+  /* Accent */
+  --accent: #7d24c4;
+  --accent-ink: #ffffff;
+  --accent-soft: #f7efff;
+
+  /* Safety and destructive actions */
+  --danger: #a3231c;
+  --danger-soft: #fdf1f0;
+  --danger-border: #c4746c;
+
+  --focus: #1f6fd0;
+
+  --radius: 10px;
+  --radius-sm: 6px;
 
   --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --heading: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --mono: ui-monospace, Consolas, monospace;
 
-  font: 18px/145% var(--sans);
-  letter-spacing: 0.18px;
-  color-scheme: light dark;
+  font: 16px/1.5 var(--sans);
   color: var(--text);
-  background: var(--bg);
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
+  background: var(--surface-page);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-
-  @media (max-width: 1024px) {
-    font-size: 16px;
-  }
 }
 
+/* The media query covers the OS setting; the data-theme scope covers an
+   explicit toggle and wins in both directions. */
 @media (prefers-color-scheme: dark) {
-  :root {
-    --text: #9ca3af;
-    --text-h: #f3f4f6;
-    --bg: #16171d;
-    --border: #2e303a;
-    --code-bg: #1f2028;
-    --accent: #c084fc;
-    --accent-bg: rgba(192, 132, 252, 0.15);
-    --accent-border: rgba(192, 132, 252, 0.5);
-    --social-bg: rgba(47, 48, 58, 0.5);
-    --shadow:
-      rgba(0, 0, 0, 0.4) 0 10px 15px -3px, rgba(0, 0, 0, 0.25) 0 4px 6px -2px;
-  }
+  :root:where(:not([data-theme='light'])) {
+    color-scheme: dark;
 
-  #social .button-icon {
-    filter: invert(1) brightness(2);
+    --surface-page: #14151a;
+    --surface-card: #1c1d24;
+    --surface-sunken: #25272f;
+
+    --text: #c9c7d2;
+    --text-strong: #f5f4f8;
+    --text-muted: #a09dac;
+
+    --border: #31333d;
+    --border-strong: #696d7c;
+
+    --accent: #cfa4ff;
+    --accent-ink: #1c1d24;
+    --accent-soft: #2b2338;
+
+    --danger: #ffa8a0;
+    --danger-soft: #2e1e1d;
+    --danger-border: #aa5e55;
+
+    --focus: #7cb2f2;
   }
 }
 
-#root {
-  width: 1126px;
-  max-width: 100%;
-  margin: 0 auto;
-  text-align: center;
-  border-inline: 1px solid var(--border);
-  min-height: 100svh;
-  display: flex;
-  flex-direction: column;
+:root[data-theme='dark'] {
+  color-scheme: dark;
+
+  --surface-page: #14151a;
+  --surface-card: #1c1d24;
+  --surface-sunken: #25272f;
+
+  --text: #c9c7d2;
+  --text-strong: #f5f4f8;
+  --text-muted: #a09dac;
+
+  --border: #31333d;
+  --border-strong: #696d7c;
+
+  --accent: #cfa4ff;
+  --accent-ink: #1c1d24;
+  --accent-soft: #2b2338;
+
+  --danger: #ffa8a0;
+  --danger-soft: #2e1e1d;
+  --danger-border: #aa5e55;
+
+  --focus: #7cb2f2;
+}
+
+* {
   box-sizing: border-box;
 }
 
 body {
   margin: 0;
+  background: var(--surface-page);
+}
+
+/*
+ * Left-aligned and phone-width. This is a dashboard read every morning, not a
+ * landing page — centred text and 56px headings made it read like marketing.
+ */
+#root {
+  width: 100%;
+  max-width: 640px;
+  margin: 0 auto;
+  min-height: 100svh;
+  padding: 0 16px 48px;
 }
 
 h1,
-h2 {
-  font-family: var(--heading);
-  font-weight: 500;
-  color: var(--text-h);
+h2,
+h3 {
+  color: var(--text-strong);
+  font-weight: 600;
+  margin: 0;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
 }
 
 h1 {
-  font-size: 56px;
-  letter-spacing: -1.68px;
-  margin: 32px 0;
-  @media (max-width: 1024px) {
-    font-size: 36px;
-    margin: 20px 0;
-  }
+  font-size: 26px;
+  margin: 24px 0 16px;
 }
+
 h2 {
-  font-size: 24px;
-  line-height: 118%;
-  letter-spacing: -0.24px;
-  margin: 0 0 8px;
-  @media (max-width: 1024px) {
-    font-size: 20px;
-  }
+  font-size: 17px;
+  margin: 0 0 10px;
 }
+
 p {
+  margin: 0 0 10px;
+}
+
+p:last-child {
+  margin-bottom: 0;
+}
+
+ul,
+ol {
+  margin: 0 0 10px;
+  padding-left: 20px;
+}
+
+a {
+  color: var(--accent);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
+}
+
+/* One visible focus treatment for everything, so keyboard users are never lost. */
+:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+/* ---------- Controls ---------- */
+
+label {
+  display: inline-block;
+  color: var(--text-muted);
+  font-size: 14px;
+  margin-bottom: 4px;
+}
+
+input,
+select,
+textarea {
+  font: inherit;
+  font-size: 15px;
+  color: var(--text-strong);
+  background: var(--surface-card);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  padding: 8px 10px;
+  /* Comfortable to hit with a thumb. */
+  min-height: 40px;
+  max-width: 100%;
+}
+
+input[type='checkbox'] {
+  min-height: 0;
+  width: 18px;
+  height: 18px;
+  accent-color: var(--accent);
+  margin: 0 6px 0 0;
+  vertical-align: -3px;
+}
+
+input[type='file'] {
+  border: none;
+  padding: 0;
+  min-height: 0;
+  color: var(--text);
+}
+
+/* Checkbox rows are labels wrapping an input — they must not inherit the
+   small muted style meant for field captions. */
+label:has(input[type='checkbox']) {
+  color: var(--text);
+  font-size: 15px;
+  margin-bottom: 0;
+  display: block;
+  padding: 4px 0;
+  cursor: pointer;
+}
+
+button {
+  font: inherit;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--accent-ink);
+  background: var(--accent);
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  padding: 9px 16px;
+  min-height: 40px;
+  cursor: pointer;
+}
+
+button:hover {
+  filter: brightness(1.08);
+}
+
+/* Secondary actions: same shape, quieter. */
+button[data-variant='quiet'] {
+  color: var(--text-strong);
+  background: var(--surface-card);
+  border-color: var(--border-strong);
+}
+
+/* Inline text actions inside lists. Neutral by default — only genuinely
+   destructive ones get the danger tone, so red keeps meaning something. */
+button[data-variant='link'] {
+  color: var(--accent);
+  background: none;
+  border: none;
+  padding: 0;
+  min-height: 0;
+  font-size: 14px;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+button[data-variant='link'][data-tone='danger'] {
+  color: var(--danger);
+}
+
+button[data-variant='link']:hover {
+  filter: none;
+  text-decoration-thickness: 2px;
+}
+
+fieldset {
+  border: none;
+  padding: 0;
   margin: 0;
 }
 
-code,
-.counter {
-  font-family: var(--mono);
-  display: inline-flex;
-  border-radius: 4px;
-  color: var(--text-h);
+legend {
+  padding: 0;
+  color: var(--text-muted);
+  font-size: 14px;
+  margin-bottom: 4px;
 }
 
-code {
+/* ---------- Navigation ---------- */
+
+.nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 8px;
+}
+
+.nav a {
+  color: var(--text-muted);
+  text-decoration: none;
   font-size: 15px;
-  line-height: 135%;
-  padding: 4px 8px;
-  background: var(--code-bg);
+  padding: 6px 10px;
+  border-radius: var(--radius-sm);
+}
+
+.nav a:hover {
+  color: var(--text-strong);
+  background: var(--surface-sunken);
+}
+
+/* Current page, marked by weight and background, not colour alone. */
+.nav a[aria-current='page'] {
+  color: var(--accent);
+  background: var(--accent-soft);
+  font-weight: 600;
 }

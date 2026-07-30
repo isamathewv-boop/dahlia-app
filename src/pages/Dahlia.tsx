@@ -15,14 +15,16 @@ const bubble = {
 
 const fromDahlia = {
   ...bubble,
-  border: '1px solid #ddd',
-  background: '#fafafa',
+  border: '1px solid var(--border)',
+  background: 'var(--surface-sunken)',
 }
 
+/** The user's own words, tinted with the accent and pushed to the right. */
 const fromUser = {
   ...bubble,
-  border: '1px solid #cce',
-  background: '#f4f6ff',
+  border: '1px solid var(--accent-soft)',
+  background: 'var(--accent-soft)',
+  color: 'var(--text-strong)',
   marginLeft: 'auto',
 }
 
@@ -99,7 +101,12 @@ export default function Dahlia() {
 
       {coachMessages.length > 0 && (
         <div style={s.card}>
-          <button type="button" style={s.linkButton} onClick={clearCoachMessages}>
+          <button
+            type="button"
+            data-variant="link"
+            data-tone="danger"
+            onClick={clearCoachMessages}
+          >
             Clear this conversation
           </button>
         </div>

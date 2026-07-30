@@ -96,7 +96,7 @@ export default function Home() {
       </div>
 
       {plan.safety.length > 0 && (
-        <div style={{ ...s.card, borderColor: '#c66', background: '#fff8f8' }}>
+        <div style={s.cardDanger}>
           <h2>Read this first</h2>
           <ul>
             {plan.safety.map((note) => (
@@ -106,7 +106,7 @@ export default function Home() {
         </div>
       )}
 
-      <div style={{ ...s.card, borderWidth: '2px' }}>
+      <div style={s.cardEmphasis}>
         <h2>Do this next</h2>
         <p>{plan.nextAction}</p>
       </div>

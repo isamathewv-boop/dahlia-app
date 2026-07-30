@@ -1,17 +1,37 @@
 import type { CSSProperties } from 'react'
 
-// Plain shared styles so every page looks the same without a CSS framework.
-// Real design comes later — this is just so the app is readable.
+/*
+ * Shared layout styles.
+ *
+ * Colours are always `var(--token)` from index.css, never literal hex — that is
+ * what makes light and dark both work. Anything hardcoded here would be wrong
+ * in one of the two modes.
+ */
 
 export const page: CSSProperties = {
-  maxWidth: '480px',
+  // The width limit lives on #root now.
 }
 
 export const card: CSSProperties = {
-  border: '1px solid #ddd',
-  borderRadius: '8px',
-  padding: '12px 16px',
-  marginBottom: '16px',
+  background: 'var(--surface-card)',
+  border: '1px solid var(--border)',
+  borderRadius: 'var(--radius)',
+  padding: '16px',
+  marginBottom: '12px',
+}
+
+/** The one card that matters most on the page. */
+export const cardEmphasis: CSSProperties = {
+  ...card,
+  borderColor: 'var(--accent)',
+  background: 'var(--accent-soft)',
+}
+
+/** Safety notes and destructive actions. */
+export const cardDanger: CSSProperties = {
+  ...card,
+  borderColor: 'var(--danger-border)',
+  background: 'var(--danger-soft)',
 }
 
 export const section: CSSProperties = {
@@ -19,7 +39,7 @@ export const section: CSSProperties = {
 }
 
 export const row: CSSProperties = {
-  marginBottom: '10px',
+  marginBottom: '12px',
 }
 
 export const fieldset: CSSProperties = {
@@ -30,8 +50,7 @@ export const fieldset: CSSProperties = {
 
 export const input: CSSProperties = {
   width: '100%',
-  maxWidth: '260px',
-  padding: '4px',
+  maxWidth: '280px',
 }
 
 export const list: CSSProperties = {
@@ -44,21 +63,20 @@ export const listItem: CSSProperties = {
   display: 'flex',
   justifyContent: 'space-between',
   alignItems: 'baseline',
-  gap: '8px',
-  padding: '8px 0',
-  borderBottom: '1px solid #eee',
+  gap: '12px',
+  padding: '10px 0',
+  borderBottom: '1px solid var(--border)',
 }
 
+/**
+ * Secondary text. A real muted colour rather than opacity — opacity on top of
+ * a dark surface produced grey-on-grey that failed contrast.
+ */
 export const muted: CSSProperties = {
-  opacity: 0.7,
-  fontSize: '13px',
+  color: 'var(--text-muted)',
+  fontSize: '14px',
 }
 
-export const linkButton: CSSProperties = {
-  background: 'none',
-  border: 'none',
-  padding: 0,
-  color: '#a33',
-  cursor: 'pointer',
-  fontSize: '13px',
+export const dangerText: CSSProperties = {
+  color: 'var(--danger)',
 }

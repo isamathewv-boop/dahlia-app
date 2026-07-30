@@ -190,7 +190,8 @@ export default function Workouts() {
                 </span>
                 <button
                   type="button"
-                  style={s.linkButton}
+                  data-variant="link"
+                      data-tone="danger"
                   onClick={() => deleteWorkoutLog(log.id)}
                 >
                   Delete

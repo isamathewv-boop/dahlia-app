@@ -130,7 +130,8 @@ export default function Diet() {
                     </span>
                     <button
                       type="button"
-                      style={s.linkButton}
+                      data-variant="link"
+                      data-tone="danger"
                       onClick={() => deleteMealLog(log.id)}
                     >
                       Delete

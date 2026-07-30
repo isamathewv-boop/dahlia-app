@@ -1,4 +1,4 @@
-import { Link, Routes, Route } from 'react-router-dom'
+import { NavLink, Routes, Route } from 'react-router-dom'
 import Onboarding from './pages/Onboarding'
 import Home from './pages/Home'
 import Cycle from './pages/Cycle'
@@ -8,31 +8,33 @@ import Dahlia from './pages/Dahlia'
 import Progress from './pages/Progress'
 import Settings from './pages/Settings'
 
+const PAGES = [
+  { to: '/', label: 'Home' },
+  { to: '/cycle', label: 'Cycle' },
+  { to: '/workouts', label: 'Workouts' },
+  { to: '/diet', label: 'Diet' },
+  { to: '/dahlia', label: 'Dahlia' },
+  { to: '/progress', label: 'Progress' },
+  { to: '/settings', label: 'Settings' },
+  { to: '/onboarding', label: 'Profile' },
+]
+
 function App() {
   return (
     <div>
-      {/* Wraps on purpose: eight links overflow a phone-width viewport and
-          would scroll the whole page sideways. */}
-      <nav
-        style={{
-          display: 'flex',
-          flexWrap: 'wrap',
-          justifyContent: 'center',
-          gap: '12px',
-          padding: '12px',
-        }}
-      >
-        <Link to="/">Home</Link>
-        <Link to="/onboarding">Onboarding</Link>
-        <Link to="/cycle">Cycle</Link>
-        <Link to="/workouts">Workouts</Link>
-        <Link to="/diet">Diet</Link>
-        <Link to="/dahlia">Dahlia</Link>
-        <Link to="/progress">Progress</Link>
-        <Link to="/settings">Settings</Link>
+      {/* NavLink sets aria-current="page" on the active route, which is what
+          the highlight in index.css hangs off — so the marker is real to a
+          screen reader, not just a colour. The row wraps because eight links
+          overflow a phone-width viewport. */}
+      <nav className="nav" aria-label="Main">
+        {PAGES.map((page) => (
+          <NavLink key={page.to} to={page.to} end={page.to === '/'}>
+            {page.label}
+          </NavLink>
+        ))}
       </nav>
 
-      <main style={{ padding: '12px' }}>
+      <main>
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/onboarding" element={<Onboarding />} />
