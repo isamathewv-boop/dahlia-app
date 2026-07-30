@@ -10,20 +10,27 @@ export const PHASE_LABELS: Record<Phase, string> = {
   luteal: 'Luteal',
 }
 
+/** One period, as far as the logs can tell. */
+export interface PeriodSpan {
+  start: string
+  /** Last bleeding day logged for this period. Equals start if only one. */
+  end: string
+  /** How many days were actually logged, as opposed to spanned. */
+  loggedDays: number
+}
+
 /**
- * The first day of the most recent period.
+ * Every period the logs describe, oldest first.
  *
- * Bleeding days that fall close together belong to the SAME period, so we group
- * them and take the earliest day of the latest group. Without this, logging
- * bleeding on day 4 of your period would look like a brand new period starting.
- *
- * The onboarding date counts as a bleeding day too — the user typed it because
- * their period started then.
+ * Bleeding days that fall close together belong to the SAME period. Without
+ * this grouping, logging bleeding on day 4 would look like a new period
+ * starting. The onboarding date counts as a bleeding day too — she typed it
+ * because her period started then.
  */
-export function lastPeriodStart(
+export function periodSpans(
   profile: UserProfile,
   cycleLogs: CycleLog[],
-): string | null {
+): PeriodSpan[] {
   const bleedingDates = new Set<string>()
 
   if (profile.lastPeriodDate) bleedingDates.add(profile.lastPeriodDate)
@@ -34,22 +41,37 @@ export function lastPeriodStart(
   }
 
   const dates = [...bleedingDates].sort()
-  if (dates.length === 0) return null
+  if (dates.length === 0) return []
 
   // Two bleeding days less than one period-length apart are the same period.
-  // Minimum of 2 gives a little slack for days the user forgot to log.
+  // Minimum of 2 gives a little slack for days she forgot to log.
   const samePeriodWindow = Math.max(profile.periodLength, 2)
 
-  let start = dates[dates.length - 1]
-  for (let i = dates.length - 2; i >= 0; i--) {
-    if (daysBetween(dates[i], start) < samePeriodWindow) {
-      start = dates[i]
+  const spans: PeriodSpan[] = [
+    { start: dates[0], end: dates[0], loggedDays: 1 },
+  ]
+
+  for (let i = 1; i < dates.length; i++) {
+    const current = spans[spans.length - 1]
+
+    if (daysBetween(dates[i - 1], dates[i]) < samePeriodWindow) {
+      current.end = dates[i]
+      current.loggedDays += 1
     } else {
-      break
+      spans.push({ start: dates[i], end: dates[i], loggedDays: 1 })
     }
   }
 
-  return start
+  return spans
+}
+
+/** The first day of the most recent period. */
+export function lastPeriodStart(
+  profile: UserProfile,
+  cycleLogs: CycleLog[],
+): string | null {
+  const spans = periodSpans(profile, cycleLogs)
+  return spans.length > 0 ? spans[spans.length - 1].start : null
 }
 
 /** Which day of the cycle today is. Day 1 = first day of the period. */

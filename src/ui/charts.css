@@ -1,0 +1,83 @@
+/*
+ * Chart roles, not raw hex, so light/dark swap in one place.
+ * Series colour is slot 1 of the reference categorical palette; both values
+ * were validated against this app's actual surfaces (#fff and #16171d) for
+ * lightness band, chroma floor and contrast.
+ */
+.viz-root {
+  --viz-track: #e5e4e7;
+  --viz-series-1: #2a78d6;
+  --viz-text: #08060d;
+  --viz-text-muted: #6b6375;
+}
+
+/* The media query covers the OS setting; the data-theme scope covers an
+   explicit toggle and must win in both directions. */
+@media (prefers-color-scheme: dark) {
+  :root:where(:not([data-theme='light'])) .viz-root {
+    --viz-track: #2e303a;
+    --viz-series-1: #3987e5;
+    --viz-text: #f3f4f6;
+    --viz-text-muted: #9ca3af;
+  }
+}
+
+:root[data-theme='dark'] .viz-root {
+  --viz-track: #2e303a;
+  --viz-series-1: #3987e5;
+  --viz-text: #f3f4f6;
+  --viz-text-muted: #9ca3af;
+}
+
+.viz-bars {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  /* 2px surface gap between adjacent bars. */
+  gap: 6px;
+}
+
+.viz-bar-row {
+  display: grid;
+  grid-template-columns: minmax(6.5em, auto) 1fr auto;
+  align-items: center;
+  gap: 10px;
+  text-align: left;
+  font-size: 15px;
+}
+
+/* Values and labels wear text tokens, never the series colour. */
+.viz-bar-label {
+  color: var(--viz-text-muted);
+}
+
+.viz-bar-value {
+  color: var(--viz-text);
+  font-variant-numeric: tabular-nums;
+  min-width: 2.5em;
+  text-align: right;
+}
+
+.viz-bar-track {
+  position: relative;
+  height: 12px;
+  border-radius: 4px;
+  background: var(--viz-track);
+  overflow: hidden;
+}
+
+.viz-bar-fill {
+  display: block;
+  height: 100%;
+  /* Rounded data-end only; the baseline end stays square. */
+  border-radius: 0 4px 4px 0;
+  background: var(--viz-series-1);
+  min-width: 2px;
+}
+
+.viz-empty {
+  color: var(--viz-text-muted);
+  font-size: 15px;
+  text-align: left;
+}

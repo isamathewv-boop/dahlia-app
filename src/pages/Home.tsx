@@ -270,6 +270,7 @@ export default function Home() {
               ` · last one ${plan.adherence.daysSinceLastWorkout} day${plan.adherence.daysSinceLastWorkout === 1 ? '' : 's'} ago`}
           </li>
         </ul>
+        <Link to="/progress">See progress</Link>
       </div>
 
       <div style={s.card}>
