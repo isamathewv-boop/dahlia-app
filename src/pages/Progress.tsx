@@ -55,10 +55,8 @@ export default function Progress() {
     )
   }
 
-  const { streak, last7, last28, weeks, cycle, takeaway } = buildProgress(
-    profile,
-    app,
-  )
+  const { streak, last7, last28, weeks, cycle, protein, takeaway } =
+    buildProgress(profile, app)
 
   const weekBars: Bar[] = weeks.map((week) => ({
     label: weekLabel(week.from, week.to),
@@ -125,6 +123,43 @@ export default function Progress() {
           <p style={{ ...s.muted, marginTop: '12px' }}>
             A dash means nothing was logged, not zero.
           </p>
+        )}
+      </div>
+
+      <div style={s.card}>
+        <h2>Protein, last 7 days</h2>
+        {!protein.target ? (
+          <p style={s.muted}>
+            No weight on file, so there is no target to measure against.{' '}
+            <Link to="/onboarding">Add one</Link> if you want this.
+          </p>
+        ) : protein.daysLogged === 0 ? (
+          <p style={s.muted}>
+            Target is {protein.target.low}–{protein.target.high}g. Nothing logged
+            with macros this week — <Link to="/diet">log a meal</Link>.
+          </p>
+        ) : (
+          <>
+            <div style={statRow}>
+              <Stat
+                value={`${protein.daysOnTarget}/${protein.daysLogged}`}
+                label="days on target"
+              />
+              <Stat value={`${protein.averageProtein}g`} label="average, logged days" />
+              <Stat
+                value={`${protein.target.low}g`}
+                label="target, lower bound"
+              />
+              <Stat
+                value={`${protein.daysLogged}/7`}
+                label="days with macros"
+              />
+            </div>
+            <p style={{ ...s.muted, marginTop: '12px' }}>
+              Averaged over days you logged, not all seven — a blank day is a
+              missing record, not a zero-protein day.
+            </p>
+          </>
         )}
       </div>
 

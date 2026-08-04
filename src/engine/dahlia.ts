@@ -6,6 +6,8 @@ import { buildWorkout } from './workout'
 import { computeReadiness } from './readiness'
 import { currentPhase } from '../data/cycle'
 import { buildWeek } from './week'
+import { proteinProgress } from './macros'
+import { proteinTrend } from './progress'
 import type { DailyPlan, ReadinessBand } from './types'
 
 /**
@@ -54,6 +56,7 @@ const OPENERS: Record<CoachTone, string> = {
  * gets ignored. Ordered by what actually blocks progress most.
  */
 function chooseCorrection(
+  profile: UserProfile,
   data: AppData,
   plan: DailyPlan,
   today: string,
@@ -89,6 +92,18 @@ function chooseCorrection(
     return "You've stopped logging food. The plan can't work around what it can't see."
   }
 
+  // Reads what was actually eaten, not what the plan asked for. Needs a few
+  // days before it counts as a pattern rather than one light day.
+  const protein = proteinTrend(profile, data, 7, today)
+  if (protein.target && protein.daysLogged >= 3) {
+    if (protein.daysOnTarget === 0) {
+      return `Protein has missed ${protein.target.low}g on all ${protein.daysLogged} days you logged it, averaging ${protein.averageProtein}g. That gap costs you more than any training tweak.`
+    }
+    if (protein.daysOnTarget < protein.daysLogged / 2) {
+      return `Protein hit target on ${protein.daysOnTarget} of ${protein.daysLogged} logged days. Front-load it at breakfast — that is usually the meal doing the least work.`
+    }
+  }
+
   if (!data.checkIns.some((c) => c.date === today)) {
     return 'No check-in today, so this plan is guessing. Thirty seconds fixes that.'
   }
@@ -118,11 +133,19 @@ export function buildBriefing(
   const plan = buildDailyPlan(profile, data, today)
   const tone = profile.coachTone
 
+  // Name the actual number when one exists — "protein first" is advice, but
+  // "78g to go" is something she can act on before dinner.
+  const progress = proteinProgress(profile, data, today)
+  const foodLine =
+    progress.verdict === 'no-target'
+      ? plan.nutrition.headline
+      : `${plan.nutrition.headline} ${progress.message}`
+
   return {
     opener: OPENERS[tone],
     workoutLine: `${plan.workout.title} — ${plan.workout.note}`,
-    foodLine: plan.nutrition.headline,
-    correction: chooseCorrection(data, plan, today),
+    foodLine,
+    correction: chooseCorrection(profile, data, plan, today),
     push: PUSH[tone][plan.readiness.band],
     nextAction: plan.nextAction,
     warnings: plan.safety,

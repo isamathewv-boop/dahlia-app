@@ -1,6 +1,8 @@
 import type { AppData, Symptom, UserProfile } from '../types'
 import { addDays, daysBetween, todayISO } from '../data/date'
 import { periodSpans } from '../data/cycle'
+import { proteinTarget } from './macros'
+import type { ProteinTarget } from './macros'
 
 // ---------- Streak ----------
 
@@ -238,6 +240,59 @@ export function weeklyBuckets(
   return buckets
 }
 
+// ---------- Protein over time ----------
+
+export interface ProteinTrend {
+  days: number
+  /** Days in the window with any protein logged at all. */
+  daysLogged: number
+  /** Days that reached the bottom of the target range. */
+  daysOnTarget: number
+  /** Mean protein across the days that had some logged. Null if none did. */
+  averageProtein: number | null
+  /** Null when there is no weight on file, so no target exists. */
+  target: ProteinTarget | null
+}
+
+/**
+ * How protein has actually gone, rather than what today's plan asked for.
+ *
+ * Averages only over days with something logged — dividing by seven when four
+ * days are blank would report a shortfall that is really a logging gap.
+ */
+export function proteinTrend(
+  profile: UserProfile,
+  data: AppData,
+  days = 7,
+  today = todayISO(),
+): ProteinTrend {
+  const from = addDays(today, -(days - 1))
+  const target = proteinTarget(profile)
+
+  const byDate = new Map<string, number>()
+  for (const meal of data.mealLogs) {
+    if (meal.date < from || meal.date > today) continue
+    const protein = meal.macros?.protein
+    if (!protein) continue
+    byDate.set(meal.date, (byDate.get(meal.date) ?? 0) + protein)
+  }
+
+  const totals = [...byDate.values()]
+
+  return {
+    days,
+    daysLogged: totals.length,
+    daysOnTarget: target
+      ? totals.filter((total) => total >= target.low).length
+      : 0,
+    averageProtein:
+      totals.length === 0
+        ? null
+        : Math.round(totals.reduce((sum, value) => sum + value, 0) / totals.length),
+    target,
+  }
+}
+
 // ---------- The whole picture ----------
 
 export interface ProgressSummary {
@@ -246,11 +301,16 @@ export interface ProgressSummary {
   last28: WindowStats
   weeks: WeekBucket[]
   cycle: CyclePattern
+  protein: ProteinTrend
   /** One honest sentence about the last seven days. */
   takeaway: string
 }
 
-function buildTakeaway(last7: WindowStats, streak: Streak): string {
+function buildTakeaway(
+  last7: WindowStats,
+  streak: Streak,
+  protein: ProteinTrend,
+): string {
   if (last7.daysLogged === 0) {
     return 'Nothing logged in the last seven days. The app cannot tell you anything useful until you feed it.'
   }
@@ -271,8 +331,18 @@ function buildTakeaway(last7: WindowStats, streak: Streak): string {
     return `${last7.workoutsCompleted} sessions done, but food logged on only ${last7.daysWithMeals} of 7 days. Training is the easy half.`
   }
 
+  // Only worth saying once there is enough logged protein to be a pattern
+  // rather than one thin day.
+  if (protein.target && protein.daysLogged >= 3 && protein.daysOnTarget === 0) {
+    return `Training is happening, but protein hit ${protein.target.low}g on none of the ${protein.daysLogged} days you logged it. That is the thing holding results back.`
+  }
+
   if (streak.current >= 7) {
     return `${streak.current} days unbroken and ${last7.workoutsCompleted} sessions completed. This is what consistent looks like.`
+  }
+
+  if (protein.target && protein.daysOnTarget >= 3) {
+    return `${last7.workoutsCompleted} sessions, and protein on target ${protein.daysOnTarget} of ${protein.daysLogged} logged days. Both halves are working.`
   }
 
   return `${last7.workoutsCompleted} sessions and ${last7.daysLogged} days logged. Solid week.`
@@ -285,6 +355,7 @@ export function buildProgress(
 ): ProgressSummary {
   const streak = computeStreak(data, today)
   const last7 = windowStats(data, 7, today)
+  const protein = proteinTrend(profile, data, 7, today)
 
   return {
     streak,
@@ -292,6 +363,7 @@ export function buildProgress(
     last28: windowStats(data, 28, today),
     weeks: weeklyBuckets(data, 4, today),
     cycle: cyclePattern(profile, data),
-    takeaway: buildTakeaway(last7, streak),
+    protein,
+    takeaway: buildTakeaway(last7, streak, protein),
   }
 }
