@@ -4,6 +4,7 @@ import { useApp } from '../state/AppContext'
 import type { CoachTone } from '../types'
 import { TONES } from '../data/options'
 import { parseImport, serializeData } from '../data/storage'
+import { clearApiKey, loadApiKey, maskApiKey, saveApiKey } from '../data/aiKey'
 import { cryptoAvailable } from '../data/crypto'
 import { todayISO } from '../data/date'
 import {
@@ -35,6 +36,9 @@ export default function Settings() {
 
   // Held in state so the copy updates the moment the browser prompt resolves.
   const [permission, setPermission] = useState(notificationPermission)
+
+  const [savedKey, setSavedKey] = useState(loadApiKey)
+  const [keyInput, setKeyInput] = useState('')
 
   const [newPasscode, setNewPasscode] = useState('')
   const [confirmPasscode, setConfirmPasscode] = useState('')
@@ -139,7 +143,22 @@ export default function Settings() {
     saveProfile({ ...profile, coachTone: tone })
   }
 
+  function handleSaveKey() {
+    saveApiKey(keyInput)
+    setSavedKey(loadApiKey())
+    setKeyInput('')
+  }
+
+  function handleRemoveKey() {
+    clearApiKey()
+    setSavedKey('')
+  }
+
   function handleDelete() {
+    // The key lives outside AppData, so resetAll cannot reach it. Deleting
+    // "everything" has to mean everything.
+    clearApiKey()
+    setSavedKey('')
     resetAll()
     setConfirmingDelete(false)
     setImportNotice('')
@@ -440,6 +459,63 @@ export default function Settings() {
                 </button>
               </p>
             </form>
+          </>
+        )}
+      </div>
+
+      <div style={s.card}>
+        <h2 id="aiKeyHeading">Photo macro analysis</h2>
+        <p style={s.muted}>
+          Optional. Lets you estimate protein, carbs and fat from a meal photo.
+        </p>
+
+        <div style={s.cardDanger}>
+          <p>
+            <strong>This is the one feature that sends data off your device.</strong>{' '}
+            When you tap Analyse, that photo goes to Anthropic to be read. Nothing
+            else in the app ever leaves, and no photo is sent unless you tap it.
+          </p>
+          <p style={s.muted}>
+            Estimates from a photo are guesses about portion size, not
+            measurements. They land in an editable form so you can correct them.
+          </p>
+        </div>
+
+        {savedKey ? (
+          <>
+            <p>
+              Key saved: <code>{maskApiKey(savedKey)}</code>
+            </p>
+            <p style={s.muted}>
+              Stored in this browser only. It is deliberately left out of Export,
+              so your exported file never contains it.
+            </p>
+            <button type="button" data-variant="quiet" onClick={handleRemoveKey}>
+              Remove key
+            </button>
+          </>
+        ) : (
+          <>
+            <div style={s.row}>
+              <label htmlFor="apiKey">Your Anthropic API key</label>
+              <br />
+              <input
+                id="apiKey"
+                type="password"
+                autoComplete="off"
+                placeholder="sk-ant-…"
+                value={keyInput}
+                onChange={(e) => setKeyInput(e.target.value)}
+                style={s.input}
+              />
+            </div>
+            <p style={s.muted}>
+              Get one from console.anthropic.com. Usage is billed to you by
+              Anthropic — this app has no server and cannot bill you.
+            </p>
+            <button type="button" onClick={handleSaveKey} disabled={!keyInput.trim()}>
+              Save key
+            </button>
           </>
         )}
       </div>

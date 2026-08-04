@@ -31,6 +31,13 @@ export interface UserProfile {
   healthConditions: string[]
   coachTone: CoachTone
 
+  /**
+   * Kilograms. Always optional — the app must stay fully usable without it,
+   * and it is only ever used to work out a protein target, never a calorie
+   * limit or a weight goal.
+   */
+  weightKg?: number
+
   // Cycle basics
   lastPeriodDate: string // YYYY-MM-DD
   cycleLength: number // days between periods, usually 21-35
@@ -85,12 +92,28 @@ export interface WorkoutLog {
 
 export type MealSlot = 'breakfast' | 'lunch' | 'dinner' | 'snack'
 
+/** Grams. Every field optional — a meal logged as just words is still valid. */
+export interface Macros {
+  protein?: number
+  carbs?: number
+  fat?: number
+}
+
 export interface MealLog {
   id: string
   date: string
   slot: MealSlot
   description: string
   notes?: string
+  macros?: Macros
+  /**
+   * A small JPEG data URL. Kept inside AppData on purpose, so photos are
+   * covered by export and by app-lock encryption for free rather than sitting
+   * unprotected in a separate store.
+   */
+  photo?: string
+  /** True when the macros came from a photo estimate rather than being typed. */
+  macrosEstimated?: boolean
 }
 
 /** The things that change every single day and drive today's plan. */

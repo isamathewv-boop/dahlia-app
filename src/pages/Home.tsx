@@ -17,6 +17,7 @@ import { formatDate, todayISO } from '../data/date'
 import { nextPeriodDate, PHASE_LABELS } from '../data/cycle'
 import { buildDailyPlan } from '../engine/plan'
 import { buildBriefing } from '../engine/dahlia'
+import { proteinProgress } from '../engine/macros'
 import * as s from '../ui/styles'
 
 export default function Home() {
@@ -68,6 +69,7 @@ export default function Home() {
 
   const plan = buildDailyPlan(profile, app, today)
   const briefing = buildBriefing(profile, app, today)
+  const protein = proteinProgress(profile, app, today)
   const nextPeriod = nextPeriodDate(profile, cycleLogs, today)
 
   const todaysCycle = cycleLogs.find((log) => log.date === today)
@@ -159,6 +161,7 @@ export default function Home() {
             <li key={point}>{point}</li>
           ))}
         </ul>
+        <p>{protein.message}</p>
         <Link to="/diet">Log a meal</Link>
       </div>
 

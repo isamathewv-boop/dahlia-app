@@ -32,6 +32,7 @@ export default function Onboarding() {
     timeAvailable: String(profile?.timeAvailable ?? 30),
     equipment: (profile?.equipment ?? 'bodyweight') as Equipment,
     dietPreference: profile?.dietPreference ?? '',
+    weightKg: profile?.weightKg ? String(profile.weightKg) : '',
     coachTone: (profile?.coachTone ?? 'strict') as CoachTone,
     lastPeriodDate: profile?.lastPeriodDate ?? '',
     cycleLength: String(profile?.cycleLength ?? 28),
@@ -65,6 +66,9 @@ export default function Onboarding() {
       timeAvailable: Number(form.timeAvailable) as TimeAvailable,
       equipment: form.equipment,
       dietPreference: form.dietPreference.trim(),
+      // Left undefined rather than 0, so "no weight given" stays distinct
+      // from a real value and no target is invented.
+      weightKg: Number(form.weightKg) > 0 ? Number(form.weightKg) : undefined,
       healthConditions: conditions,
       coachTone: form.coachTone,
       lastPeriodDate: form.lastPeriodDate,
@@ -192,6 +196,26 @@ export default function Onboarding() {
               onChange={(e) => set('dietPreference', e.target.value)}
             />
           </div>
+          <div style={row}>
+            <label htmlFor="weightKg">Weight in kg (optional)</label>
+            <br />
+            <input
+              id="weightKg"
+              type="number"
+              min="20"
+              max="300"
+              step="0.5"
+              inputMode="decimal"
+              value={form.weightKg}
+              onChange={(e) => set('weightKg', e.target.value)}
+            />
+            <br />
+            <span style={{ fontSize: '13px', opacity: 0.7 }}>
+              Only used to work out a protein target. Never a calorie limit,
+              never a weight goal, and the app works fine without it.
+            </span>
+          </div>
+
           <fieldset style={{ border: 'none', padding: 0, margin: 0 }}>
             <legend style={{ padding: 0 }}>
               Health conditions Dahlia must respect
