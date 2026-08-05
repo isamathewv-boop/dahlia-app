@@ -17,7 +17,7 @@ import {
   TIMES,
   TONES,
 } from '../data/options'
-import { row, section } from '../ui/styles'
+import { dangerText, muted, row, section } from '../ui/styles'
 
 export default function Onboarding() {
   const { profile, saveProfile } = useApp()
@@ -27,7 +27,6 @@ export default function Onboarding() {
   // what <input> and <select> give us; we convert them on submit.
   const [form, setForm] = useState({
     name: profile?.name ?? '',
-    mainGoal: (profile?.mainGoal ?? 'fat-loss') as Goal,
     workoutLevel: (profile?.workoutLevel ?? 'beginner') as WorkoutLevel,
     timeAvailable: String(profile?.timeAvailable ?? 30),
     equipment: (profile?.equipment ?? 'bodyweight') as Equipment,
@@ -44,6 +43,12 @@ export default function Onboarding() {
     profile?.healthConditions ?? [],
   )
 
+  // A checklist, not a single choice — order is priority order: the first
+  // one ticked is what drives the protein ratio, rep range and weekly shape,
+  // the rest still shape the food guidance and Dahlia's notes.
+  const [goals, setGoals] = useState<Goal[]>(profile?.goals ?? [])
+  const [goalsTouched, setGoalsTouched] = useState(false)
+
   function set<K extends keyof typeof form>(key: K, value: (typeof form)[K]) {
     setForm((current) => ({ ...current, [key]: value }))
   }
@@ -56,12 +61,25 @@ export default function Onboarding() {
     )
   }
 
+  function toggleGoal(goal: Goal) {
+    setGoalsTouched(true)
+    setGoals((current) =>
+      current.includes(goal)
+        ? current.filter((g) => g !== goal)
+        : [...current, goal],
+    )
+  }
+
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
+    if (goals.length === 0) {
+      setGoalsTouched(true)
+      return
+    }
 
     const newProfile: UserProfile = {
       name: form.name.trim() || 'You',
-      mainGoal: form.mainGoal,
+      goals,
       workoutLevel: form.workoutLevel,
       timeAvailable: Number(form.timeAvailable) as TimeAvailable,
       equipment: form.equipment,
@@ -98,21 +116,29 @@ export default function Onboarding() {
               onChange={(e) => set('name', e.target.value)}
             />
           </div>
-          <div style={row}>
-            <label htmlFor="mainGoal">Main goal</label>
-            <br />
-            <select
-              id="mainGoal"
-              value={form.mainGoal}
-              onChange={(e) => set('mainGoal', e.target.value as Goal)}
-            >
-              {GOALS.map((g) => (
-                <option key={g.value} value={g.value}>
-                  {g.label}
-                </option>
-              ))}
-            </select>
-          </div>
+          <fieldset style={{ border: 'none', padding: 0, margin: 0 }}>
+            <legend style={{ padding: 0 }}>
+              Goals — pick as many as apply, in the order they matter most
+            </legend>
+            {GOALS.map((g) => (
+              <label key={g.value} style={{ display: 'block' }}>
+                <input
+                  type="checkbox"
+                  checked={goals.includes(g.value)}
+                  onChange={() => toggleGoal(g.value)}
+                />{' '}
+                {g.label}
+                {goals[0] === g.value && (
+                  <span style={{ ...muted, fontSize: '13px' }}> — primary</span>
+                )}
+              </label>
+            ))}
+            {goalsTouched && goals.length === 0 && (
+              <p style={{ ...dangerText, fontSize: '13px' }}>
+                Pick at least one goal — everything else is built from it.
+              </p>
+            )}
+          </fieldset>
           <div style={row}>
             <label htmlFor="coachTone">How should Dahlia talk to you?</label>
             <br />

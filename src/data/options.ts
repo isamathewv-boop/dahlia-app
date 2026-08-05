@@ -32,6 +32,7 @@ export const GOALS: Option<Goal>[] = [
   { value: 'maintenance', label: 'Maintenance' },
   { value: 'energy', label: 'More energy' },
   { value: 'hormone-support', label: 'Hormone / cycle support' },
+  { value: 'overall-wellbeing', label: 'Overall well-being' },
 ]
 
 export const LEVELS: Option<WorkoutLevel>[] = [

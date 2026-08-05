@@ -1,8 +1,9 @@
-import type { Equipment, Intensity, UserProfile, WorkoutLog } from '../types'
+import type { Equipment, Intensity, UserProfile, WorkoutLevel, WorkoutLog } from '../types'
 import type { Exercise, Focus } from '../data/exercises'
 import { availableExercises, FOCUS_LABELS } from '../data/exercises'
 import { fromISODate } from '../data/date'
 import type { Phase } from '../data/cycle'
+import { primaryGoal } from './goals'
 import type { PlannedExercise, Readiness, WorkoutPlan } from './types'
 
 /** How many exercises fit in the time available. */
@@ -90,6 +91,8 @@ function prescribe(
     return (exercise) => ({
       name: exercise.name,
       prescription: `${minutesAvailable} minutes at a conversational pace`,
+      cue: exercise.cue,
+      visual: exercise.visual,
     })
   }
 
@@ -103,12 +106,8 @@ function prescribe(
   // Never push volume on a light day.
   const sets = intensity === 'light' ? Math.min(baseSets, 2) : baseSets
 
-  const reps =
-    profile.mainGoal === 'muscle-gain'
-      ? '8-12'
-      : profile.mainGoal === 'fat-loss'
-        ? '12-15'
-        : '10-12'
+  const goal = primaryGoal(profile)
+  const reps = goal === 'muscle-gain' ? '8-12' : goal === 'fat-loss' ? '12-15' : '10-12'
 
   return (exercise) => ({
     name: exercise.name,
@@ -118,6 +117,8 @@ function prescribe(
       : exercise.isHold
         ? `${sets} × 30 seconds`
         : `${sets} × ${reps}`,
+    cue: exercise.cue,
+    visual: exercise.visual,
   })
 }
 
@@ -150,12 +151,13 @@ function pickForDay<T>(pool: T[], count: number, date: string): T[] {
 function selectExercises(
   focus: Focus,
   equipment: Equipment,
+  level: WorkoutLevel,
   allowHighImpact: boolean,
   count: number,
   date: string,
 ): Exercise[] {
   // Already sorted best-equipment-first.
-  const all = availableExercises(focus, equipment, allowHighImpact)
+  const all = availableExercises(focus, equipment, level, allowHighImpact)
 
   // Group into equipment tiers, keeping that descending order.
   const tiers: Exercise[][] = []
@@ -197,6 +199,7 @@ export function buildWorkout(
   const exercises = selectExercises(
     focus,
     profile.equipment,
+    profile.workoutLevel,
     allowHighImpact,
     count,
     date,
@@ -227,7 +230,7 @@ function workoutNote(
   if (readiness.band === 'moderate') {
     return 'Moderate day. Stop two reps short of failure on everything.'
   }
-  if (profile.mainGoal === 'muscle-gain' && profile.equipment === 'bodyweight') {
+  if (primaryGoal(profile) === 'muscle-gain' && profile.equipment === 'bodyweight') {
     return 'Good day to push. Bodyweight only limits progress here — slow the tempo down to make it harder.'
   }
   return 'Good day to push. Add load or reps over last time.'

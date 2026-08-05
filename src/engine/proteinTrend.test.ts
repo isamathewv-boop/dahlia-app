@@ -10,7 +10,7 @@ const meal = (date: string, protein: number, slot: 'breakfast' | 'lunch' | 'dinn
   mealLog(date, { slot, macros: { protein } })
 
 /** 60kg on fat loss ⇒ a 110–130g target. */
-const profile = makeProfile({ weightKg: 60, mainGoal: 'fat-loss' })
+const profile = makeProfile({ weightKg: 60, goals: ['fat-loss'] })
 
 describe('proteinTrend', () => {
   it('reports no target without a weight', () => {

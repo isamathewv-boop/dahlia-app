@@ -1,4 +1,4 @@
-import type { AppData } from '../types'
+import type { AppData, Goal } from '../types'
 import type { EncryptedEnvelope } from './crypto'
 
 // Local-first storage. Health data never leaves this device.
@@ -32,13 +32,38 @@ export function createEmptyData(): AppData {
   }
 }
 
+/**
+ * Fixes up shapes from before a profile field changed. Runs on every path
+ * that turns raw storage into `AppData` — plain load, decrypted, and import —
+ * so a real saved profile never breaks just because the app grew a new field.
+ *
+ * Right now: `mainGoal: Goal` (one goal) became `goals: Goal[]` (a checklist).
+ * A profile still carrying the old field gets its single goal wrapped into
+ * the new array.
+ */
+export function migrateAppData(data: AppData): AppData {
+  if (!data.profile) return data
+
+  const legacy = data.profile as unknown as { mainGoal?: Goal }
+  const hasNewShape =
+    Array.isArray(data.profile.goals) && data.profile.goals.length > 0
+
+  if (hasNewShape || !legacy.mainGoal) return data
+
+  const migrated = { ...data.profile, goals: [legacy.mainGoal] } as typeof data.profile & {
+    mainGoal?: Goal
+  }
+  delete migrated.mainGoal
+  return { ...data, profile: migrated }
+}
+
 /** Read everything back from the browser. Never throws. */
 export function loadData(): AppData {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
     if (!raw) return createEmptyData()
     // Blank slate first, so any field added in a later version isn't undefined.
-    return { ...createEmptyData(), ...JSON.parse(raw) }
+    return migrateAppData({ ...createEmptyData(), ...JSON.parse(raw) })
   } catch {
     return createEmptyData()
   }
@@ -136,5 +161,5 @@ export function parseImport(raw: string): AppData | null {
     profile !== undefined || LOG_KEYS.some((key) => candidate[key] !== undefined)
   if (!hasAnyField) return null
 
-  return { ...createEmptyData(), ...candidate } as AppData
+  return migrateAppData({ ...createEmptyData(), ...candidate } as AppData)
 }

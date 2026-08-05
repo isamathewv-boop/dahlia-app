@@ -19,42 +19,59 @@ describe('proteinTarget', () => {
   })
 
   it('scales with bodyweight', () => {
-    const light = proteinTarget(makeProfile({ weightKg: 50, mainGoal: 'fat-loss' }))!
-    const heavy = proteinTarget(makeProfile({ weightKg: 80, mainGoal: 'fat-loss' }))!
+    const light = proteinTarget(makeProfile({ weightKg: 50, goals: ['fat-loss'] }))!
+    const heavy = proteinTarget(makeProfile({ weightKg: 80, goals: ['fat-loss'] }))!
     expect(heavy.low).toBeGreaterThan(light.low)
   })
 
   it('uses the documented ranges per goal', () => {
     // 60kg on fat loss: 1.8-2.2 g/kg = 108-132, rounded to the nearest 5.
-    const fatLoss = proteinTarget(makeProfile({ weightKg: 60, mainGoal: 'fat-loss' }))!
+    const fatLoss = proteinTarget(makeProfile({ weightKg: 60, goals: ['fat-loss'] }))!
     expect(fatLoss.low).toBe(110)
     expect(fatLoss.high).toBe(130)
 
     // Maintenance is a lower ask: 1.2-1.6 g/kg = 72-96.
-    const maintain = proteinTarget(makeProfile({ weightKg: 60, mainGoal: 'maintenance' }))!
+    const maintain = proteinTarget(makeProfile({ weightKg: 60, goals: ['maintenance'] }))!
     expect(maintain.low).toBe(70)
     expect(maintain.high).toBe(95)
   })
 
   it('asks more of a deficit than of maintenance', () => {
     const weightKg = 65
-    const fatLoss = proteinTarget(makeProfile({ weightKg, mainGoal: 'fat-loss' }))!
-    const maintain = proteinTarget(makeProfile({ weightKg, mainGoal: 'maintenance' }))!
+    const fatLoss = proteinTarget(makeProfile({ weightKg, goals: ['fat-loss'] }))!
+    const maintain = proteinTarget(makeProfile({ weightKg, goals: ['maintenance'] }))!
     expect(fatLoss.low).toBeGreaterThan(maintain.low)
   })
 
   it('explains where the number came from', () => {
-    const target = proteinTarget(makeProfile({ weightKg: 60, mainGoal: 'fat-loss' }))!
+    const target = proteinTarget(makeProfile({ weightKg: 60, goals: ['fat-loss'] }))!
     expect(target.basis).toContain('per kg')
   })
 
   it('covers every goal', () => {
-    const goals = ['fat-loss', 'muscle-gain', 'maintenance', 'energy', 'hormone-support'] as const
-    for (const mainGoal of goals) {
-      const target = proteinTarget(makeProfile({ weightKg: 60, mainGoal }))!
+    const allGoals = [
+      'fat-loss',
+      'muscle-gain',
+      'maintenance',
+      'energy',
+      'hormone-support',
+      'overall-wellbeing',
+    ] as const
+    for (const goal of allGoals) {
+      const target = proteinTarget(makeProfile({ weightKg: 60, goals: [goal] }))!
       expect(target.low).toBeGreaterThan(0)
       expect(target.high).toBeGreaterThanOrEqual(target.low)
     }
+  })
+
+  it('uses the first ticked goal as the primary driver', () => {
+    // Order is priority order — the goal a user picks first is the one that
+    // shapes the numbers, not the last one or some average of the set.
+    const first = proteinTarget(makeProfile({ weightKg: 60, goals: ['fat-loss', 'maintenance'] }))!
+    const reversed = proteinTarget(makeProfile({ weightKg: 60, goals: ['maintenance', 'fat-loss'] }))!
+    expect(first.low).not.toBe(reversed.low)
+    expect(first.perKgLow).toBe(1.8) // fat-loss ratio
+    expect(reversed.perKgLow).toBe(1.2) // maintenance ratio
   })
 })
 
@@ -88,7 +105,7 @@ describe('proteinProgress', () => {
   })
 
   it('states the target when nothing is logged yet', () => {
-    const profile = makeProfile({ weightKg: 60, mainGoal: 'fat-loss' })
+    const profile = makeProfile({ weightKg: 60, goals: ['fat-loss'] })
     const result = proteinProgress(profile, makeData(), today)
 
     expect(result.verdict).toBe('nothing-logged')
@@ -108,7 +125,7 @@ describe('proteinProgress', () => {
   })
 
   it('says how far short she is', () => {
-    const profile = makeProfile({ weightKg: 60, mainGoal: 'fat-loss' })
+    const profile = makeProfile({ weightKg: 60, goals: ['fat-loss'] })
     const data = makeData({ mealLogs: [withMacros(60)] })
     const result = proteinProgress(profile, data, today)
 
@@ -117,13 +134,13 @@ describe('proteinProgress', () => {
   })
 
   it('recognises being in range', () => {
-    const profile = makeProfile({ weightKg: 60, mainGoal: 'fat-loss' })
+    const profile = makeProfile({ weightKg: 60, goals: ['fat-loss'] })
     const data = makeData({ mealLogs: [withMacros(120)] })
     expect(proteinProgress(profile, data, today).verdict).toBe('in-range')
   })
 
   it('never treats going over on protein as a failure', () => {
-    const profile = makeProfile({ weightKg: 60, mainGoal: 'fat-loss' })
+    const profile = makeProfile({ weightKg: 60, goals: ['fat-loss'] })
     const data = makeData({ mealLogs: [withMacros(200)] })
     const result = proteinProgress(profile, data, today)
 
@@ -138,7 +155,7 @@ describe('proteinProgress', () => {
 
   it('never produces a calorie target anywhere', () => {
     // The deliberate omission. If this ever fails, someone added a deficit.
-    const profile = makeProfile({ weightKg: 60, mainGoal: 'fat-loss' })
+    const profile = makeProfile({ weightKg: 60, goals: ['fat-loss'] })
     const data = makeData({ mealLogs: [withMacros(60, 100, 40)] })
     const result = proteinProgress(profile, data, today)
 

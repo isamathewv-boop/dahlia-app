@@ -14,6 +14,7 @@ import {
   clearData,
   createEmptyData,
   loadData,
+  migrateAppData,
   readRawStorage,
   saveData,
   saveEnvelope,
@@ -93,8 +94,9 @@ export default function AppProvider({ children }: { children: ReactNode }) {
     setVault({
       status: 'unlocked',
       // Merge over a blank slate, so a vault sealed by an older version still
-      // gains any fields added since.
-      data: { ...createEmptyData(), ...opened.data },
+      // gains any fields added since, then fix up any field shape that
+      // changed after this vault was last saved.
+      data: migrateAppData({ ...createEmptyData(), ...opened.data }),
       key: opened.key,
       salt: opened.salt,
     })

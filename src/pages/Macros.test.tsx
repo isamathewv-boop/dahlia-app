@@ -39,7 +39,7 @@ describe('Diet page — macros', () => {
   })
 
   it('shows the protein target once a weight exists', () => {
-    seed({ profile: makeProfile({ weightKg: 60, mainGoal: 'fat-loss' }) })
+    seed({ profile: makeProfile({ weightKg: 60, goals: ['fat-loss'] }) })
     renderPage(<Diet />)
 
     expect(screen.getByText(/110–130g of protein/)).toBeTruthy()

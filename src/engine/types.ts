@@ -1,5 +1,5 @@
 import type { Intensity } from '../types'
-import type { Focus } from '../data/exercises'
+import type { Focus, PictogramKind } from '../data/exercises'
 import type { Phase } from '../data/cycle'
 
 export type ReadinessBand = 'low' | 'moderate' | 'good'
@@ -16,6 +16,10 @@ export interface PlannedExercise {
   name: string
   /** e.g. "3 × 10" or "5 minutes". */
   prescription: string
+  /** One line of form guidance. */
+  cue: string
+  /** Which pictogram represents this movement. */
+  visual: PictogramKind
 }
 
 export interface WorkoutPlan {

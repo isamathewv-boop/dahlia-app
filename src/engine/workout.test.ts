@@ -142,8 +142,8 @@ describe('buildWorkout — prescriptions', () => {
   })
 
   it('sets rep ranges from the goal', () => {
-    const fatLoss = makeProfile({ mainGoal: 'fat-loss' })
-    const muscle = makeProfile({ mainGoal: 'muscle-gain' })
+    const fatLoss = makeProfile({ goals: ['fat-loss'] })
+    const muscle = makeProfile({ goals: ['muscle-gain'] })
 
     expect(
       buildWorkout(fatLoss, good, 'follicular', [], 30, DATE).exercises[0].prescription,

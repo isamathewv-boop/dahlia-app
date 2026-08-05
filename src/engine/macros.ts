@@ -1,5 +1,6 @@
 import type { AppData, Goal, MealLog, Macros, UserProfile } from '../types'
 import { todayISO } from '../data/date'
+import { primaryGoal } from './goals'
 
 /*
  * Protein targets, and nothing else.
@@ -24,6 +25,7 @@ const PROTEIN_PER_KG: Record<Goal, { low: number; high: number }> = {
   maintenance: { low: 1.2, high: 1.6 },
   energy: { low: 1.2, high: 1.6 },
   'hormone-support': { low: 1.4, high: 1.8 },
+  'overall-wellbeing': { low: 1.2, high: 1.6 },
 }
 
 export interface ProteinTarget {
@@ -45,14 +47,15 @@ export function proteinTarget(profile: UserProfile): ProteinTarget | null {
   const weight = profile.weightKg
   if (!weight || weight <= 0) return null
 
-  const { low, high } = PROTEIN_PER_KG[profile.mainGoal]
+  const goal = primaryGoal(profile)
+  const { low, high } = PROTEIN_PER_KG[goal]
 
   return {
     low: round5(weight * low),
     high: round5(weight * high),
     perKgLow: low,
     perKgHigh: high,
-    basis: `${low}–${high} g per kg of bodyweight, for ${profile.mainGoal.replace('-', ' ')}.`,
+    basis: `${low}–${high} g per kg of bodyweight, for ${goal.replace('-', ' ')}.`,
   }
 }
 

@@ -18,6 +18,7 @@ import { nextPeriodDate, PHASE_LABELS } from '../data/cycle'
 import { buildDailyPlan } from '../engine/plan'
 import { buildBriefing } from '../engine/dahlia'
 import { proteinProgress } from '../engine/macros'
+import { Pictogram } from '../ui/pictograms'
 import * as s from '../ui/styles'
 
 export default function Home() {
@@ -141,10 +142,16 @@ export default function Home() {
             {plan.workout.note}
           </span>
         </p>
-        <ul>
+        <ul style={{ listStyle: 'none', padding: 0 }}>
           {plan.workout.exercises.map((exercise) => (
-            <li key={exercise.name}>
-              {exercise.name} — {exercise.prescription}
+            <li
+              key={exercise.name}
+              style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}
+            >
+              <Pictogram kind={exercise.visual} size={32} />
+              <span>
+                {exercise.name} — {exercise.prescription}
+              </span>
             </li>
           ))}
         </ul>
@@ -290,7 +297,10 @@ export default function Home() {
       <div style={s.card}>
         <h2>Your setup</h2>
         <ul>
-          <li>Goal: {GOAL_LABELS[profile.mainGoal]}</li>
+          <li>
+            Goal{profile.goals.length > 1 ? 's' : ''}:{' '}
+            {profile.goals.map((g) => GOAL_LABELS[g]).join(', ')}
+          </li>
           <li>Level: {LEVEL_LABELS[profile.workoutLevel]}</li>
           <li>Usual time: {profile.timeAvailable} minutes</li>
           <li>Equipment: {EQUIPMENT_LABELS[profile.equipment]}</li>

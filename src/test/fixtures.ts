@@ -18,7 +18,7 @@ import { createEmptyData } from '../data/storage'
 export function makeProfile(overrides: Partial<UserProfile> = {}): UserProfile {
   return {
     name: 'Test',
-    mainGoal: 'fat-loss',
+    goals: ['fat-loss'],
     workoutLevel: 'intermediate',
     timeAvailable: 30,
     equipment: 'bodyweight',

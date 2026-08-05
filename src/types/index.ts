@@ -11,6 +11,7 @@ export type Goal =
   | 'maintenance'
   | 'energy'
   | 'hormone-support'
+  | 'overall-wellbeing'
 
 export type WorkoutLevel = 'beginner' | 'intermediate' | 'advanced'
 
@@ -23,7 +24,14 @@ export type TimeAvailable = 15 | 30 | 45 | 60
 
 export interface UserProfile {
   name: string
-  mainGoal: Goal
+  /**
+   * At least one, checked in onboarding. Engines that need a single number
+   * (protein target, rep range, weekly pattern) read goals[0] as the driver;
+   * qualitative guidance (nutrition tips, notes) can draw on all of them.
+   * Order is priority order — the first goal picked is the one that wins
+   * when two goals would prescribe different things.
+   */
+  goals: Goal[]
   workoutLevel: WorkoutLevel
   timeAvailable: TimeAvailable
   equipment: Equipment

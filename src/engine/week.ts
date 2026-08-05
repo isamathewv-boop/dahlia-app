@@ -2,6 +2,7 @@ import type { CycleLog, Goal, UserProfile } from '../types'
 import type { Focus } from '../data/exercises'
 import { addDays, todayISO } from '../data/date'
 import { currentPhase } from '../data/cycle'
+import { primaryGoal } from './goals'
 
 export interface PlannedDay {
   date: string
@@ -61,6 +62,16 @@ const PATTERNS: Record<Goal, Focus[]> = {
     'core',
     'recovery',
   ],
+  // Consistency over intensity: gentler, more recovery, no forced heavy days.
+  'overall-wellbeing': [
+    'full-body',
+    'recovery',
+    'cardio',
+    'recovery',
+    'full-body',
+    'recovery',
+    'recovery',
+  ],
 }
 
 /** Heavy loading that gets softened on period days. */
@@ -88,7 +99,7 @@ export function buildWeek(
   cycleLogs: CycleLog[],
   startDate = todayISO(),
 ): PlannedDay[] {
-  return PATTERNS[profile.mainGoal].map((focus, index) => {
+  return PATTERNS[primaryGoal(profile)].map((focus, index) => {
     const date = addDays(startDate, index)
     const phase = currentPhase(profile, cycleLogs, date)
 

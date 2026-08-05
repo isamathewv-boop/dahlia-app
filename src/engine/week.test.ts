@@ -10,6 +10,7 @@ const GOALS: Goal[] = [
   'maintenance',
   'energy',
   'hormone-support',
+  'overall-wellbeing',
 ]
 
 describe('buildWeek', () => {
@@ -21,15 +22,15 @@ describe('buildWeek', () => {
   })
 
   it('gives every goal a pattern', () => {
-    for (const mainGoal of GOALS) {
-      expect(buildWeek(makeProfile({ mainGoal }), [], TODAY)).toHaveLength(7)
+    for (const goal of GOALS) {
+      expect(buildWeek(makeProfile({ goals: [goal] }), [], TODAY)).toHaveLength(7)
     }
   })
 
   it('always includes at least two recovery days', () => {
     // A week with no rest in it is a week nobody finishes.
-    for (const mainGoal of GOALS) {
-      const week = buildWeek(makeProfile({ mainGoal }), [], TODAY)
+    for (const goal of GOALS) {
+      const week = buildWeek(makeProfile({ goals: [goal] }), [], TODAY)
       const recovery = week.filter((day) => day.focus === 'recovery')
       expect(recovery.length).toBeGreaterThanOrEqual(2)
     }
@@ -63,7 +64,7 @@ describe('buildWeek', () => {
     const profile = makeProfile({
       lastPeriodDate: TODAY,
       periodLength: 5,
-      mainGoal: 'fat-loss', // pattern starts with a lower-body day
+      goals: ['fat-loss'], // pattern starts with a lower-body day
     })
     const week = buildWeek(profile, [], TODAY)
 
@@ -75,7 +76,7 @@ describe('buildWeek', () => {
     const profile = makeProfile({
       lastPeriodDate: TODAY,
       periodLength: 2,
-      mainGoal: 'muscle-gain',
+      goals: ['muscle-gain'],
     })
     const week = buildWeek(profile, [], TODAY)
     const later = week.slice(3)

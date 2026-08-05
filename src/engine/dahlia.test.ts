@@ -261,7 +261,7 @@ describe('respondTo — plan my week', () => {
       lastPeriodDate: '2026-07-04',
       cycleLength: 28,
       periodLength: 5,
-      mainGoal: 'fat-loss',
+      goals: ['fat-loss'],
     })
     const reply = respondTo('plan-week', profile, makeData(), TODAY)
     expect(reply).toContain('period expected')

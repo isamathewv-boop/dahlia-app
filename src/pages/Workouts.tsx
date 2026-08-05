@@ -6,6 +6,7 @@ import { addDays, formatDate, todayISO } from '../data/date'
 import { buildDailyPlan } from '../engine/plan'
 import { typeFromFocus } from '../engine/workout'
 import * as s from '../ui/styles'
+import { Pictogram } from '../ui/pictograms'
 
 export default function Workouts() {
   const app = useApp()
@@ -64,10 +65,18 @@ export default function Workouts() {
               {plan.workout.note}
             </span>
           </p>
-          <ul>
+          <ul style={{ listStyle: 'none', padding: 0 }}>
             {plan.workout.exercises.map((exercise) => (
-              <li key={exercise.name}>
-                {exercise.name} — {exercise.prescription}
+              <li
+                key={exercise.name}
+                style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', marginBottom: '12px' }}
+              >
+                <Pictogram kind={exercise.visual} size={44} />
+                <span>
+                  {exercise.name} — {exercise.prescription}
+                  <br />
+                  <span style={s.muted}>{exercise.cue}</span>
+                </span>
               </li>
             ))}
           </ul>
