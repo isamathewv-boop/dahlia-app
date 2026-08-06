@@ -7,6 +7,7 @@ import type {
   MealSlot,
   Symptom,
   TimeAvailable,
+  WeightGoal,
   WorkoutLevel,
 } from '../types'
 
@@ -66,10 +67,17 @@ export const CONDITIONS = [
   'Injury',
 ]
 
+export const WEIGHT_GOALS: Option<WeightGoal>[] = [
+  { value: 'lose', label: 'Lose weight' },
+  { value: 'maintain', label: 'Maintain weight' },
+  { value: 'gain', label: 'Gain weight' },
+]
+
 export const GOAL_LABELS = toLabels(GOALS)
 export const LEVEL_LABELS = toLabels(LEVELS)
 export const EQUIPMENT_LABELS = toLabels(EQUIPMENT)
 export const TONE_LABELS = toLabels(TONES)
+export const WEIGHT_GOAL_LABELS = toLabels(WEIGHT_GOALS)
 
 // ---------- Cycle options ----------
 

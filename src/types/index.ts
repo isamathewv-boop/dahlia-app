@@ -15,6 +15,9 @@ export type Goal =
 
 export type WorkoutLevel = 'beginner' | 'intermediate' | 'advanced'
 
+/** What she wants her weight to do. Purely descriptive — never drives a calorie target. */
+export type WeightGoal = 'lose' | 'maintain' | 'gain'
+
 export type Equipment = 'bodyweight' | 'bands' | 'dumbbells' | 'full-gym'
 
 export type CoachTone = 'strict' | 'balanced' | 'gentle'
@@ -45,6 +48,15 @@ export interface UserProfile {
    * limit or a weight goal.
    */
   weightKg?: number
+
+  /**
+   * Optional and purely descriptive, same rule as weightKg: never used to
+   * derive a calorie target or a deficit. Only powers a plain "X kg to go"
+   * readout. Undefined means she hasn't said what she wants her weight to do.
+   */
+  weightGoal?: WeightGoal
+  /** Kilograms. Only meaningful alongside a 'lose' or 'gain' weightGoal. */
+  targetWeightKg?: number
 
   // Cycle basics
   lastPeriodDate: string // YYYY-MM-DD

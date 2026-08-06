@@ -305,6 +305,16 @@ export default function Home() {
           <li>Usual time: {profile.timeAvailable} minutes</li>
           <li>Equipment: {EQUIPMENT_LABELS[profile.equipment]}</li>
           <li>Diet: {profile.dietPreference || 'not set'}</li>
+          {profile.weightKg && (
+            <li>
+              Weight: {profile.weightKg}kg
+              {profile.weightGoal === 'maintain' && ' — maintaining'}
+              {profile.weightGoal &&
+                profile.weightGoal !== 'maintain' &&
+                profile.targetWeightKg &&
+                ` — ${profile.weightGoal === 'lose' ? 'losing' : 'gaining'} toward ${profile.targetWeightKg}kg (${Math.abs(profile.targetWeightKg - profile.weightKg).toFixed(1)}kg to go)`}
+            </li>
+          )}
           <li>
             Conditions:{' '}
             {profile.healthConditions.length
