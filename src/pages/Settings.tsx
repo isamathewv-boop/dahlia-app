@@ -3,7 +3,8 @@ import { Link } from 'react-router-dom'
 import { useApp } from '../state/AppContext'
 import type { CoachTone } from '../types'
 import { TONES } from '../data/options'
-import { parseImport, serializeData } from '../data/storage'
+import { parseImport } from '../data/storage'
+import { downloadExportPdf } from '../data/pdfExport'
 import { clearApiKey, loadApiKey, maskApiKey, saveApiKey } from '../data/aiKey'
 import { cryptoAvailable } from '../data/crypto'
 import { todayISO } from '../data/date'
@@ -55,17 +56,7 @@ export default function Settings() {
   ]
 
   function handleExport() {
-    const json = serializeData(app)
-    const blob = new Blob([json], { type: 'application/json' })
-    const url = URL.createObjectURL(blob)
-
-    const link = document.createElement('a')
-    link.href = url
-    link.download = `dahlia-export-${todayISO()}.json`
-    link.click()
-
-    // Let the browser start the download before we release the blob.
-    setTimeout(() => URL.revokeObjectURL(url), 0)
+    downloadExportPdf(app, `dahlia-export-${todayISO()}.pdf`)
   }
 
   async function handleImportFile(e: React.ChangeEvent<HTMLInputElement>) {
@@ -218,8 +209,9 @@ export default function Settings() {
           log.
         </p>
         <p style={s.muted}>
-          The flip side: clearing your browser data deletes it too. Export a
-          copy if you care about keeping it.
+          The flip side: clearing your browser data deletes it too. Download a
+          PDF if you want a copy to keep — it's for reading, not for restoring;
+          see Import below for that.
         </p>
         <ul style={s.list}>
           {counts.map((row) => (
@@ -234,19 +226,22 @@ export default function Settings() {
       <div style={s.card}>
         <h2>Export</h2>
         <p style={s.muted}>
-          Downloads everything as a JSON file you own and can read.
+          Downloads a readable PDF of your profile and everything you've
+          logged — to keep, print, or share with a doctor or trainer. It is
+          not a backup: the app cannot read a PDF back in, so it will not
+          restore your data on a new device (see Import below for that).
         </p>
         <button type="button" onClick={handleExport}>
-          Export my data
+          Download as PDF
         </button>
       </div>
 
       <div style={s.card}>
         <h2>Import</h2>
         <p style={s.muted}>
-          Restores a previous export — for a new device, or after clearing your
-          browser. This <strong>replaces</strong> everything currently in the
-          app.
+          Restores a previous JSON export — for a new device, or after
+          clearing your browser. This <strong>replaces</strong> everything
+          currently in the app.
         </p>
         <input
           ref={fileInput}
@@ -268,7 +263,9 @@ export default function Settings() {
         {confirmingDelete ? (
           <>
             <p>
-              <strong>Certain?</strong> Export first if you want a copy.
+              <strong>Certain?</strong> Download a PDF first if you want a
+              record — deleting is permanent, and a PDF cannot be imported
+              back in to undo it.
             </p>
             <button type="button" onClick={handleDelete}>
               Yes, delete everything
@@ -410,8 +407,10 @@ export default function Settings() {
                 your logs, and it means forgetting it loses them permanently.
               </p>
               <p style={s.muted}>
-                Export a copy first. The exported file is not encrypted, so keep
-                it somewhere you trust.
+                Downloading a PDF first gives you a readable record, but it
+                cannot be imported back in — so forgetting this passcode still
+                means losing your working data in the app for good, PDF or
+                not.
               </p>
             </div>
 

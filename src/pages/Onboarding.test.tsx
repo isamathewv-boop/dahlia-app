@@ -62,7 +62,7 @@ describe('Onboarding — weight goal', () => {
     expect(screen.queryByLabelText('Target weight in kg')).toBeNull()
 
     await user.selectOptions(
-      screen.getByLabelText('What do you want your weight to do?'),
+      screen.getByLabelText('Weight goals'),
       'lose',
     )
     expect(screen.getByLabelText('Target weight in kg')).toBeTruthy()
@@ -74,7 +74,7 @@ describe('Onboarding — weight goal', () => {
     await reachStep2(user)
 
     await user.selectOptions(
-      screen.getByLabelText('What do you want your weight to do?'),
+      screen.getByLabelText('Weight goals'),
       'maintain',
     )
     expect(screen.queryByLabelText('Target weight in kg')).toBeNull()
@@ -87,7 +87,7 @@ describe('Onboarding — weight goal', () => {
 
     await user.type(screen.getByLabelText('Current weight in kg (optional)'), '70')
     await user.selectOptions(
-      screen.getByLabelText('What do you want your weight to do?'),
+      screen.getByLabelText('Weight goals'),
       'lose',
     )
     await user.type(screen.getByLabelText('Target weight in kg'), '62')
@@ -105,12 +105,12 @@ describe('Onboarding — weight goal', () => {
     await reachStep2(user)
 
     await user.selectOptions(
-      screen.getByLabelText('What do you want your weight to do?'),
+      screen.getByLabelText('Weight goals'),
       'lose',
     )
     await user.type(screen.getByLabelText('Target weight in kg'), '62')
     await user.selectOptions(
-      screen.getByLabelText('What do you want your weight to do?'),
+      screen.getByLabelText('Weight goals'),
       'maintain',
     )
     await user.click(screen.getByRole('button', { name: 'Save' }))

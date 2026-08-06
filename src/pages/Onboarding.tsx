@@ -91,6 +91,7 @@ export default function Onboarding() {
       return
     }
     setStep(2)
+    window.scrollTo(0, 0)
   }
 
   function handleSubmit(e: React.FormEvent) {
@@ -280,7 +281,7 @@ export default function Onboarding() {
             </div>
 
             <div style={row}>
-              <label htmlFor="weightGoal">What do you want your weight to do?</label>
+              <label htmlFor="weightGoal">Weight goals</label>
               <br />
               <select
                 id="weightGoal"
@@ -393,7 +394,13 @@ export default function Onboarding() {
             </label>
           </section>
 
-          <button type="button" onClick={() => setStep(1)}>
+          <button
+            type="button"
+            onClick={() => {
+              setStep(1)
+              window.scrollTo(0, 0)
+            }}
+          >
             Back
           </button>{' '}
           <button type="submit">Save</button>

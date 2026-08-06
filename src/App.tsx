@@ -9,6 +9,7 @@ import Progress from './pages/Progress'
 import Settings from './pages/Settings'
 import ReminderBanner from './components/ReminderBanner'
 import LockScreen from './components/LockScreen'
+import ScrollToTop from './components/ScrollToTop'
 import { useApp } from './state/AppContext'
 
 const PAGES = [
@@ -30,6 +31,7 @@ function App() {
 
   return (
     <div>
+      <ScrollToTop />
       {/* NavLink sets aria-current="page" on the active route, which is what
           the highlight in index.css hangs off — so the marker is real to a
           screen reader, not just a colour. The row wraps because eight links

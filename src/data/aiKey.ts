@@ -2,8 +2,9 @@
  * The user's own Anthropic API key.
  *
  * Stored under its own localStorage key, deliberately NOT inside AppData.
- * AppData is what `Export my data` writes to a plain JSON file — a key living
- * there would be copied into every export and shared with whoever sees it.
+ * AppData is what gets written into every PDF export and read by Import — a
+ * key living there would be copied into every export and shared with
+ * whoever sees it.
  *
  * The trade-off of keeping it out: app lock does not encrypt it, and delete-
  * everything has to clear it separately. Both are handled explicitly.
