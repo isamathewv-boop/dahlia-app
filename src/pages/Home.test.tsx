@@ -53,6 +53,24 @@ describe('Home page — daily check-in', () => {
   })
 })
 
+describe('Home page — cycle prediction honesty', () => {
+  it('shows the next-period estimate plainly for a regular cycle', () => {
+    seed({ profile: makeProfile({ lastPeriodDate: today, irregularCycles: false }) })
+    renderPage(<Home />)
+
+    expect(screen.getByText(/next period around/)).toBeTruthy()
+    expect(screen.queryByText(/cycles are irregular/)).toBeNull()
+  })
+
+  it('adds the irregular-cycle caveat instead of presenting the date as reliable', () => {
+    seed({ profile: makeProfile({ lastPeriodDate: today, irregularCycles: true }) })
+    renderPage(<Home />)
+
+    expect(screen.getByText(/next period around/)).toBeTruthy()
+    expect(screen.getByText(/cycles are irregular/)).toBeTruthy()
+  })
+})
+
 describe('Home page — the plan responds to inputs', () => {
   it('prescribes recovery on a bad day', () => {
     seed({

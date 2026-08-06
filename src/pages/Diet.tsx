@@ -33,7 +33,8 @@ export default function Diet() {
   const [analysing, setAnalysing] = useState(false)
   const [aiNote, setAiNote] = useState('')
   const [aiError, setAiError] = useState('')
-  const photoInput = useRef<HTMLInputElement>(null)
+  const cameraInput = useRef<HTMLInputElement>(null)
+  const libraryInput = useRef<HTMLInputElement>(null)
 
   function resetForm() {
     setDescription('')
@@ -52,7 +53,8 @@ export default function Diet() {
     setAiNote('')
 
     const file = e.target.files?.[0]
-    if (photoInput.current) photoInput.current.value = ''
+    // Reset so picking the same file again still fires a change.
+    e.target.value = ''
     if (!file) return
 
     try {
@@ -183,16 +185,39 @@ export default function Diet() {
         </div>
 
         <div style={s.row}>
-          <label htmlFor="photo">Photo</label>
+          <span id="photoLabel">Photo</span>
           <br />
           <input
-            ref={photoInput}
-            id="photo"
+            ref={cameraInput}
             type="file"
             accept="image/*"
             capture="environment"
             onChange={handlePhoto}
+            aria-label="Take photo"
+            style={{ display: 'none' }}
           />
+          <input
+            ref={libraryInput}
+            type="file"
+            accept="image/*"
+            onChange={handlePhoto}
+            aria-label="Choose from photo library"
+            style={{ display: 'none' }}
+          />
+          <button
+            type="button"
+            data-variant="quiet"
+            onClick={() => cameraInput.current?.click()}
+          >
+            Take photo
+          </button>{' '}
+          <button
+            type="button"
+            data-variant="quiet"
+            onClick={() => libraryInput.current?.click()}
+          >
+            Choose from library
+          </button>
         </div>
 
         {photo && (

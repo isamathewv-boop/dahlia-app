@@ -8,9 +8,7 @@ import Dahlia from './pages/Dahlia'
 import Progress from './pages/Progress'
 import Settings from './pages/Settings'
 import ReminderBanner from './components/ReminderBanner'
-import LockScreen from './components/LockScreen'
 import ScrollToTop from './components/ScrollToTop'
-import { useApp } from './state/AppContext'
 
 const PAGES = [
   { to: '/', label: 'Home' },
@@ -24,11 +22,6 @@ const PAGES = [
 ]
 
 function App() {
-  const { locked } = useApp()
-
-  // Nothing else mounts while locked — no nav, no pages, no reminder banner.
-  if (locked) return <LockScreen />
-
   return (
     <div>
       <ScrollToTop />

@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { screen, within } from '@testing-library/react'
 import Diet from './Diet'
 import { renderPage, seed, stored } from '../test/renderApp'
@@ -86,5 +86,61 @@ describe('Diet page', () => {
     renderPage(<Diet />)
 
     expect(screen.getByText(/vegetarian/)).toBeTruthy()
+  })
+
+  describe('photo entry points', () => {
+    it('offers both a camera capture and a library picker', () => {
+      seed({ profile: makeProfile() })
+      renderPage(<Diet />)
+
+      expect(screen.getByRole('button', { name: 'Take photo' })).toBeTruthy()
+      expect(screen.getByRole('button', { name: 'Choose from library' })).toBeTruthy()
+    })
+
+    it('wires the camera button to a capture-only file input', () => {
+      seed({ profile: makeProfile() })
+      renderPage(<Diet />)
+
+      const input = screen.getByLabelText('Take photo') as HTMLInputElement
+      expect(input.getAttribute('capture')).toBe('environment')
+    })
+
+    it('wires the library button to a file input with no capture forced', () => {
+      seed({ profile: makeProfile() })
+      renderPage(<Diet />)
+
+      const input = screen.getByLabelText('Choose from photo library') as HTMLInputElement
+      expect(input.getAttribute('capture')).toBeNull()
+    })
+
+    it('clicking Take photo opens the camera input, not the library one', async () => {
+      seed({ profile: makeProfile() })
+      const { user } = renderPage(<Diet />)
+
+      const cameraInput = screen.getByLabelText('Take photo') as HTMLInputElement
+      const libraryInput = screen.getByLabelText('Choose from photo library') as HTMLInputElement
+      const cameraClick = vi.spyOn(cameraInput, 'click')
+      const libraryClick = vi.spyOn(libraryInput, 'click')
+
+      await user.click(screen.getByRole('button', { name: 'Take photo' }))
+
+      expect(cameraClick).toHaveBeenCalledTimes(1)
+      expect(libraryClick).not.toHaveBeenCalled()
+    })
+
+    it('clicking Choose from library opens the library input, not the camera one', async () => {
+      seed({ profile: makeProfile() })
+      const { user } = renderPage(<Diet />)
+
+      const cameraInput = screen.getByLabelText('Take photo') as HTMLInputElement
+      const libraryInput = screen.getByLabelText('Choose from photo library') as HTMLInputElement
+      const cameraClick = vi.spyOn(cameraInput, 'click')
+      const libraryClick = vi.spyOn(libraryInput, 'click')
+
+      await user.click(screen.getByRole('button', { name: 'Choose from library' }))
+
+      expect(libraryClick).toHaveBeenCalledTimes(1)
+      expect(cameraClick).not.toHaveBeenCalled()
+    })
   })
 })

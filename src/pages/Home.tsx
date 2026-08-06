@@ -89,6 +89,15 @@ export default function Home() {
             Cycle day {plan.cycleDay}
             {plan.phase ? ` · ${PHASE_LABELS[plan.phase]}` : ''}
             {nextPeriod ? ` · next period around ${formatDate(nextPeriod)}` : ''}
+            {nextPeriod && profile.irregularCycles && (
+              <>
+                <br />
+                <span style={s.muted}>
+                  Estimated from your average cycle length — you told Dahlia
+                  your cycles are irregular, so treat this loosely.
+                </span>
+              </>
+            )}
           </p>
         ) : (
           <p style={s.muted}>

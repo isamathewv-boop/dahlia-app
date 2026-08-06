@@ -10,117 +10,23 @@ import type {
   UserProfile,
   WorkoutLog,
 } from '../types'
-import {
-  clearData,
-  createEmptyData,
-  loadData,
-  migrateAppData,
-  readRawStorage,
-  saveData,
-  saveEnvelope,
-} from '../data/storage'
-import {
-  deriveKey,
-  encryptWithKey,
-  isEncryptedEnvelope,
-  newSalt,
-  unlockEnvelope,
-} from '../data/crypto'
+import { clearData, createEmptyData, loadData, saveData } from '../data/storage'
 import { newId } from '../data/date'
 import { AppContext } from './AppContext'
 import type { CycleEntryInput } from './AppContext'
 
-/**
- * Everything about the store's lock state, held together so transitions are
- * atomic. Splitting it across several useState calls risked the save effect
- * firing mid-transition and writing empty data over the encrypted store.
- */
-interface Vault {
-  status: 'locked' | 'unlocked'
-  data: AppData
-  /** Present only when app lock is on. Never persisted. */
-  key: CryptoKey | null
-  salt: Uint8Array | null
-}
-
-function initialVault(): Vault {
-  const raw = readRawStorage()
-
-  // An envelope means we cannot read anything until a passcode arrives.
-  if (isEncryptedEnvelope(raw)) {
-    return { status: 'locked', data: createEmptyData(), key: null, salt: null }
-  }
-
-  return { status: 'unlocked', data: loadData(), key: null, salt: null }
-}
-
 export default function AppProvider({ children }: { children: ReactNode }) {
-  const [vault, setVault] = useState(initialVault)
-  const { data } = vault
+  const [data, setData] = useState<AppData>(loadData)
 
-  /** Every log helper goes through here, so none of them can drop the key. */
+  /** Every log helper goes through here. */
   function update(change: (current: AppData) => AppData) {
-    setVault((current) => ({ ...current, data: change(current.data) }))
+    setData((current) => change(current))
   }
 
-  // Persist on change — encrypted when locked-enabled, plain otherwise.
+  // Persist on every change.
   useEffect(() => {
-    if (vault.status === 'locked') return // nothing decrypted to write
-
-    if (!vault.key || !vault.salt) {
-      saveData(vault.data)
-      return
-    }
-
-    // An older encryption finishing late must not overwrite a newer one.
-    let cancelled = false
-    encryptWithKey(vault.key, vault.salt, vault.data).then((envelope) => {
-      if (!cancelled) saveEnvelope(envelope)
-    })
-    return () => {
-      cancelled = true
-    }
-  }, [vault])
-
-  // ---------- Lock control ----------
-
-  async function unlock(passcode: string): Promise<boolean> {
-    const raw = readRawStorage()
-    if (!isEncryptedEnvelope(raw)) return false
-
-    const opened = await unlockEnvelope(raw, passcode)
-    if (!opened) return false
-
-    setVault({
-      status: 'unlocked',
-      // Merge over a blank slate, so a vault sealed by an older version still
-      // gains any fields added since, then fix up any field shape that
-      // changed after this vault was last saved.
-      data: migrateAppData({ ...createEmptyData(), ...opened.data }),
-      key: opened.key,
-      salt: opened.salt,
-    })
-    return true
-  }
-
-  async function enableLock(passcode: string): Promise<void> {
-    const salt = newSalt()
-    const key = await deriveKey(passcode, salt)
-    setVault((current) => ({ ...current, key, salt }))
-  }
-
-  function disableLock(): void {
-    // Dropping the key makes the save effect write plain data again.
-    setVault((current) => ({ ...current, key: null, salt: null }))
-  }
-
-  function lockNow(): void {
-    setVault((current) =>
-      current.key
-        ? { status: 'locked', data: createEmptyData(), key: null, salt: null }
-        : current,
-    )
-  }
+    saveData(data)
+  }, [data])
 
   function saveProfile(profile: UserProfile) {
     update((current) => ({ ...current, profile }))
@@ -219,32 +125,18 @@ export default function AppProvider({ children }: { children: ReactNode }) {
   }
 
   function replaceAllData(imported: AppData) {
-    // Keeps the current key, so importing into a locked vault stays encrypted.
     update(() => imported)
   }
 
   function resetAll() {
     clearData()
-    // Deleting everything also removes the lock — there is nothing left to
-    // protect, and leaving a passcode on an empty vault only confuses.
-    setVault({
-      status: 'unlocked',
-      data: createEmptyData(),
-      key: null,
-      salt: null,
-    })
+    setData(createEmptyData())
   }
 
   return (
     <AppContext.Provider
       value={{
         ...data,
-        locked: vault.status === 'locked',
-        lockEnabled: vault.key !== null,
-        unlock,
-        enableLock,
-        disableLock,
-        lockNow,
         saveProfile,
         saveCycleEntry,
         saveCheckIn,

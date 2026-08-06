@@ -1,4 +1,5 @@
 import type { SymptomLog, UserProfile } from '../types'
+import { CONDITIONS } from '../data/options'
 
 /**
  * Safety notes. These are never softened, skipped or overridden by
@@ -44,6 +45,15 @@ export function buildSafety(
 
   if (profile.healthConditions.includes('Injury')) {
     notes.push('Injury on file: high-impact movements are excluded. Stop if anything sharpens.')
+  }
+
+  // Anything typed into "Other" in onboarding — there's no specific rule for
+  // it, but it must still be acknowledged rather than silently dropped.
+  const custom = profile.healthConditions.filter((c) => !CONDITIONS.includes(c))
+  if (custom.length > 0) {
+    notes.push(
+      `${custom.join(', ')} on file. Dahlia has no specific rule built for this yet, so plans stay general — flag it to your doctor if it should change what you're doing.`,
+    )
   }
 
   return notes

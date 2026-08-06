@@ -61,4 +61,25 @@ describe('buildSafety', () => {
     const notes = buildSafety(makeProfile(), [], null)
     expect(joined(notes)).not.toContain('later than')
   })
+
+  it('acknowledges a custom "Other" condition instead of silently dropping it', () => {
+    const profile = makeProfile({ healthConditions: ['asthma'] })
+    const notes = buildSafety(profile, [], 10)
+    expect(joined(notes)).toContain('asthma')
+  })
+
+  it('never mistakes a listed condition for a custom one', () => {
+    // PCOS already gets its own note; it must not also trigger the generic
+    // "no specific rule" fallback meant for free-text entries.
+    const profile = makeProfile({ healthConditions: ['PCOS'] })
+    const notes = buildSafety(profile, [], 10)
+    expect(joined(notes)).not.toContain('no specific rule')
+  })
+
+  it('lists every custom condition, not just the first', () => {
+    const profile = makeProfile({ healthConditions: ['asthma', 'migraines'] })
+    const notes = buildSafety(profile, [], 10)
+    expect(joined(notes)).toContain('asthma')
+    expect(joined(notes)).toContain('migraines')
+  })
 })
