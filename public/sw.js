@@ -6,9 +6,12 @@
  * gone. No user data passes through here — the logs live in localStorage and
  * are never fetched over the network.
  *
- * Bump CACHE when the strategy changes; old caches are dropped on activate.
+ * Bump CACHE on every deploy that should reach already-installed users
+ * promptly — a byte change here is what makes the browser notice this file
+ * differs and run the update -> activate -> controllerchange cycle at all.
+ * Old caches are dropped on activate.
  */
-const CACHE = 'dahlia-v1'
+const CACHE = 'dahlia-v2'
 
 self.addEventListener('install', (event) => {
   // Take over as soon as possible rather than waiting for every tab to close.
@@ -35,10 +38,11 @@ self.addEventListener('fetch', (event) => {
   if (url.origin !== self.location.origin) return
 
   // HTML: network first, so a redeploy is picked up while online, with the
-  // cached shell as the offline fallback.
+  // cached shell as the offline fallback. no-store so a stale HTTP cache
+  // entry can't stand in for a real network hit.
   if (request.mode === 'navigate') {
     event.respondWith(
-      fetch(request)
+      fetch(request, { cache: 'no-store' })
         .then((response) => {
           const copy = response.clone()
           caches.open(CACHE).then((cache) => cache.put('./', copy))
