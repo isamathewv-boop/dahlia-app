@@ -15,6 +15,7 @@ import {
 } from '../data/options'
 import { formatDate, todayISO } from '../data/date'
 import { nextPeriodDate, PHASE_LABELS } from '../data/cycle'
+import PhaseDot from '../ui/PhaseDot'
 import { buildDailyPlan } from '../engine/plan'
 import { buildBriefing } from '../engine/dahlia'
 import { proteinProgress } from '../engine/macros'
@@ -86,6 +87,7 @@ export default function Home() {
         <h2>Today — {formatDate(today)}</h2>
         {plan.cycleDay !== null ? (
           <p>
+            {plan.phase && <PhaseDot phase={plan.phase} />}
             Cycle day {plan.cycleDay}
             {plan.phase ? ` · ${PHASE_LABELS[plan.phase]}` : ''}
             {nextPeriod ? ` · next period around ${formatDate(nextPeriod)}` : ''}
@@ -157,7 +159,9 @@ export default function Home() {
               key={exercise.name}
               style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}
             >
-              <Pictogram kind={exercise.visual} size={32} />
+              <span style={{ ...s.pictogramChip, width: '40px', height: '40px' }}>
+                <Pictogram kind={exercise.visual} size={26} />
+              </span>
               <span>
                 {exercise.name} — {exercise.prescription}
               </span>

@@ -11,10 +11,11 @@
 :root {
   color-scheme: light;
 
-  /* Surfaces */
-  --surface-page: #ffffff;
+  /* Surfaces. A warm off-white rather than clinical #fff — cards stay pure
+     white so they still lift off the page without needing a heavy shadow. */
+  --surface-page: #faf8f6;
   --surface-card: #ffffff;
-  --surface-sunken: #f4f4f6;
+  --surface-sunken: #f1ede8;
 
   /* Ink */
   --text: #3d3b45;
@@ -22,7 +23,7 @@
   --text-muted: #5f5c6b;
 
   /* Lines. --border is decorative; --border-strong outlines controls. */
-  --border: #e3e2e6;
+  --border: #e6e1db;
   --border-strong: #84818c;
 
   /* Accent */
@@ -37,10 +38,27 @@
 
   --focus: #1f6fd0;
 
-  --radius: 10px;
-  --radius-sm: 6px;
+  /*
+   * Cycle-phase colour coding. Decorative dots only, never the sole carrier
+   * of meaning — the phase name is always printed next to them — so these
+   * only need to clear WCAG's 3:1 non-text-contrast floor against both
+   * --surface-card and --surface-page, checked with a script before being
+   * set here (see commit message).
+   */
+  --phase-menstrual: #d9506b;
+  --phase-follicular: #3f8f63;
+  --phase-ovulation: #b87f1f;
+  --phase-luteal: #8b6fc9;
+
+  --radius: 14px;
+  --radius-sm: 8px;
+
+  --shadow-card: 0 1px 2px rgba(35, 25, 15, 0.04), 0 6px 20px rgba(35, 25, 15, 0.06);
 
   --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
+  /* Headings only — a warm serif reads calmer and more considered than the
+     UI's system sans, without the cost or risk of shipping a webfont. */
+  --serif: Georgia, 'Iowan Old Style', 'Palatino Linotype', 'Book Antiqua', Palatino, 'Noto Serif', serif;
 
   font: 16px/1.5 var(--sans);
   color: var(--text);
@@ -55,7 +73,7 @@
   :root:where(:not([data-theme='light'])) {
     color-scheme: dark;
 
-    --surface-page: #14151a;
+    --surface-page: #141416;
     --surface-card: #1c1d24;
     --surface-sunken: #25272f;
 
@@ -75,13 +93,20 @@
     --danger-border: #aa5e55;
 
     --focus: #7cb2f2;
+
+    --phase-menstrual: #e88a9a;
+    --phase-follicular: #8fcf9f;
+    --phase-ovulation: #e8c179;
+    --phase-luteal: #b7a0e6;
+
+    --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.2), 0 6px 20px rgba(0, 0, 0, 0.28);
   }
 }
 
 :root[data-theme='dark'] {
   color-scheme: dark;
 
-  --surface-page: #14151a;
+  --surface-page: #141416;
   --surface-card: #1c1d24;
   --surface-sunken: #25272f;
 
@@ -101,6 +126,13 @@
   --danger-border: #aa5e55;
 
   --focus: #7cb2f2;
+
+  --phase-menstrual: #e88a9a;
+  --phase-follicular: #8fcf9f;
+  --phase-ovulation: #e8c179;
+  --phase-luteal: #b7a0e6;
+
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.2), 0 6px 20px rgba(0, 0, 0, 0.28);
 }
 
 * {
@@ -135,13 +167,20 @@ h3 {
 }
 
 h1 {
-  font-size: 26px;
-  margin: 24px 0 16px;
+  font-family: var(--serif);
+  font-weight: 500;
+  font-size: 30px;
+  letter-spacing: -0.01em;
+  margin: 28px 0 18px;
 }
 
 h2 {
-  font-size: 17px;
-  margin: 0 0 10px;
+  font-size: 16px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--text-muted);
+  margin: 0 0 12px;
 }
 
 p {
@@ -287,15 +326,17 @@ legend {
   display: flex;
   flex-wrap: wrap;
   gap: 4px;
-  padding: 12px 0;
-  border-bottom: 1px solid var(--border);
-  margin-bottom: 8px;
+  padding: 10px 10px;
+  margin: 0 -10px 12px;
+  background: var(--surface-sunken);
+  border-radius: 0 0 var(--radius) var(--radius);
 }
 
 .nav a {
   color: var(--text-muted);
   text-decoration: none;
-  font-size: 15px;
+  font-size: 14px;
+  font-weight: 500;
   padding: 6px 10px;
   border-radius: var(--radius-sm);
 }

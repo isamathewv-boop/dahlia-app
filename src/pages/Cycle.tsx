@@ -16,6 +16,7 @@ import {
   PHASE_LABELS,
 } from '../data/cycle'
 import * as s from '../ui/styles'
+import PhaseDot from '../ui/PhaseDot'
 
 export default function Cycle() {
   const { profile, cycleLogs, saveCycleEntry, deleteCycleEntry, symptomsOn } =
@@ -94,7 +95,12 @@ export default function Cycle() {
           <h2>Where you are</h2>
           <ul>
             <li>Cycle day {day}</li>
-            {phase && <li>Phase: {PHASE_LABELS[phase]}</li>}
+            {phase && (
+              <li>
+                <PhaseDot phase={phase} />
+                Phase: {PHASE_LABELS[phase]}
+              </li>
+            )}
             {nextPeriod && <li>Next period around {formatDate(nextPeriod)}</li>}
           </ul>
           <p style={s.muted}>

@@ -16,8 +16,9 @@ export const card: CSSProperties = {
   background: 'var(--surface-card)',
   border: '1px solid var(--border)',
   borderRadius: 'var(--radius)',
-  padding: '16px',
-  marginBottom: '12px',
+  boxShadow: 'var(--shadow-card)',
+  padding: '18px',
+  marginBottom: '14px',
 }
 
 /** The one card that matters most on the page. */
@@ -79,4 +80,15 @@ export const muted: CSSProperties = {
 
 export const dangerText: CSSProperties = {
   color: 'var(--danger)',
+}
+
+/** A soft round backdrop behind a movement pictogram, so the linework isn't
+ * floating bare on the card. */
+export const pictogramChip: CSSProperties = {
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  flexShrink: 0,
+  background: 'var(--surface-sunken)',
+  borderRadius: '50%',
 }

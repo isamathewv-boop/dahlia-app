@@ -10,6 +10,14 @@ export const PHASE_LABELS: Record<Phase, string> = {
   luteal: 'Luteal',
 }
 
+/** A small, decorative colour cue per phase — never the only way the phase is conveyed. */
+export const PHASE_COLORS: Record<Phase, string> = {
+  menstrual: 'var(--phase-menstrual)',
+  follicular: 'var(--phase-follicular)',
+  ovulation: 'var(--phase-ovulation)',
+  luteal: 'var(--phase-luteal)',
+}
+
 /** One period, as far as the logs can tell. */
 export interface PeriodSpan {
   start: string

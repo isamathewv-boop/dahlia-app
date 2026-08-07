@@ -71,7 +71,9 @@ export default function Workouts() {
                 key={exercise.name}
                 style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', marginBottom: '12px' }}
               >
-                <Pictogram kind={exercise.visual} size={44} />
+                <span style={{ ...s.pictogramChip, width: '54px', height: '54px' }}>
+                  <Pictogram kind={exercise.visual} size={36} />
+                </span>
                 <span>
                   {exercise.name} — {exercise.prescription}
                   <br />
