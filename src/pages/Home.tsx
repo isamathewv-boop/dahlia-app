@@ -20,6 +20,7 @@ import { buildDailyPlan } from '../engine/plan'
 import { buildBriefing } from '../engine/dahlia'
 import { proteinProgress } from '../engine/macros'
 import { Pictogram } from '../ui/pictograms'
+import { BlobField } from '../ui/decor'
 import * as s from '../ui/styles'
 
 export default function Home() {
@@ -81,7 +82,18 @@ export default function Home() {
 
   return (
     <div style={s.page}>
-      <h1>Hi {profile.name}</h1>
+      <div style={{ position: 'relative', overflow: 'hidden', borderRadius: 'var(--radius)' }}>
+        <BlobField
+          style={{
+            position: 'absolute',
+            inset: 0,
+            width: '100%',
+            height: '100%',
+            zIndex: 0,
+          }}
+        />
+        <h1 style={{ position: 'relative', zIndex: 1 }}>Hi {profile.name}</h1>
+      </div>
 
       <div style={s.card}>
         <h2>Today — {formatDate(today)}</h2>

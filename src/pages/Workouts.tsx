@@ -7,6 +7,7 @@ import { buildDailyPlan } from '../engine/plan'
 import { typeFromFocus } from '../engine/workout'
 import * as s from '../ui/styles'
 import { Pictogram } from '../ui/pictograms'
+import EmptyState from '../ui/EmptyState'
 
 export default function Workouts() {
   const app = useApp()
@@ -184,7 +185,7 @@ export default function Workouts() {
       <div style={s.card}>
         <h2>History</h2>
         {recent.length === 0 ? (
-          <p style={s.muted}>No sessions logged yet.</p>
+          <EmptyState>No sessions logged yet.</EmptyState>
         ) : (
           <ul style={s.list}>
             {recent.map((log) => (

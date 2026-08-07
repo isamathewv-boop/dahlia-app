@@ -7,6 +7,7 @@ import { formatDate, todayISO } from '../data/date'
 import { dataUrlBytes, fileToThumbnail, formatBytes } from '../data/photo'
 import { hasApiKey } from '../data/aiKey'
 import { proteinProgress } from '../engine/macros'
+import EmptyState from '../ui/EmptyState'
 import * as s from '../ui/styles'
 
 const CONFIDENCE_LABELS = {
@@ -338,7 +339,7 @@ export default function Diet() {
           </p>
         )}
         {byDate.size === 0 ? (
-          <p style={s.muted}>No meals logged yet.</p>
+          <EmptyState>No meals logged yet.</EmptyState>
         ) : (
           [...byDate.entries()].map(([logDate, meals]) => (
             <div key={logDate} style={{ marginBottom: '12px' }}>

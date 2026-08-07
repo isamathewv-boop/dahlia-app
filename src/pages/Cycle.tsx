@@ -17,6 +17,7 @@ import {
 } from '../data/cycle'
 import * as s from '../ui/styles'
 import PhaseDot from '../ui/PhaseDot'
+import EmptyState from '../ui/EmptyState'
 
 export default function Cycle() {
   const { profile, cycleLogs, saveCycleEntry, deleteCycleEntry, symptomsOn } =
@@ -203,7 +204,7 @@ export default function Cycle() {
       <div style={s.card}>
         <h2>History</h2>
         {recent.length === 0 ? (
-          <p style={s.muted}>Nothing logged yet.</p>
+          <EmptyState>Nothing logged yet.</EmptyState>
         ) : (
           <ul style={s.list}>
             {recent.map((log) => {
