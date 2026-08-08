@@ -5,6 +5,7 @@ import { SYMPTOM_LABELS } from '../data/options'
 import { formatDate } from '../data/date'
 import BarChart from '../components/BarChart'
 import type { Bar } from '../components/BarChart'
+import SemiGauge from '../components/SemiGauge'
 import * as s from '../ui/styles'
 
 /** A number worth reading on its own, with its meaning underneath. */
@@ -87,6 +88,15 @@ export default function Progress() {
 
       <div style={s.card}>
         <h2>Streak</h2>
+        {streak.longest > 0 && (
+          <div className="viz-gauge-row" style={{ marginBottom: '12px' }}>
+            <SemiGauge
+              value={streak.current / streak.longest}
+              centerText={String(streak.current)}
+              label="days, current streak"
+            />
+          </div>
+        )}
         <div style={statRow}>
           <Stat value={String(streak.current)} label="days unbroken" />
           <Stat value={String(streak.longest)} label="longest ever" />
@@ -99,8 +109,19 @@ export default function Progress() {
 
       <div style={s.card}>
         <h2>Last 7 days</h2>
+        <div className="viz-gauge-row" style={{ marginBottom: '16px' }}>
+          <SemiGauge
+            value={last7.daysLogged / 7}
+            centerText={`${last7.daysLogged}/7`}
+            label="days logged"
+          />
+          <SemiGauge
+            value={last7.checkIns / 7}
+            centerText={`${last7.checkIns}/7`}
+            label="check-ins"
+          />
+        </div>
         <div style={statRow}>
-          <Stat value={`${last7.daysLogged}/7`} label="days logged" />
           <Stat value={String(last7.workoutsCompleted)} label="sessions done" />
           <Stat value={String(last7.workoutMinutes)} label="minutes trained" />
           <Stat value={`${last7.daysWithMeals}/7`} label="days with food logged" />
@@ -140,11 +161,14 @@ export default function Progress() {
           </p>
         ) : (
           <>
-            <div style={statRow}>
-              <Stat
-                value={`${protein.daysOnTarget}/${protein.daysLogged}`}
+            <div className="viz-gauge-row" style={{ marginBottom: '16px' }}>
+              <SemiGauge
+                value={protein.daysOnTarget / protein.daysLogged}
+                centerText={`${protein.daysOnTarget}/${protein.daysLogged}`}
                 label="days on target"
               />
+            </div>
+            <div style={statRow}>
               <Stat value={`${protein.averageProtein}g`} label="average, logged days" />
               <Stat
                 value={`${protein.target.low}g`}
@@ -182,13 +206,20 @@ export default function Progress() {
 
       <div style={s.card}>
         <h2>Last 28 days</h2>
-        <div style={statRow}>
-          <Stat value={`${last28.daysLogged}/28`} label="days logged" />
-          <Stat value={String(last28.workoutsCompleted)} label="sessions done" />
-          <Stat
-            value={`${last28.daysWithMeals}/28`}
-            label="days with food logged"
+        <div className="viz-gauge-row" style={{ marginBottom: '16px' }}>
+          <SemiGauge
+            value={last28.daysLogged / 28}
+            centerText={`${last28.daysLogged}/28`}
+            label="days logged"
           />
+          <SemiGauge
+            value={last28.daysWithMeals / 28}
+            centerText={`${last28.daysWithMeals}/28`}
+            label="days with food"
+          />
+        </div>
+        <div style={statRow}>
+          <Stat value={String(last28.workoutsCompleted)} label="sessions done" />
           <Stat
             value={
               last28.averageSleep === null ? '—' : `${last28.averageSleep}h`

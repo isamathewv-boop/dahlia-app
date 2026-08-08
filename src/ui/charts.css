@@ -74,3 +74,61 @@
   color: var(--text-muted);
   font-size: 14px;
 }
+
+/* ---------- Semicircle gauge (a single ratio against a limit) ---------- */
+
+.viz-gauge {
+  position: relative;
+  display: inline-flex;
+  justify-content: center;
+}
+
+.viz-gauge svg {
+  display: block;
+}
+
+.viz-gauge-track {
+  fill: none;
+  /* A lighter step of the same hue as the fill, not a neutral grey — the
+     meter pattern, so the whole arc reads as one measure. */
+  stroke: var(--accent-soft);
+  stroke-linecap: round;
+}
+
+.viz-gauge-fill {
+  fill: none;
+  stroke: var(--viz-series-1);
+  stroke-linecap: round;
+  transition: stroke-dasharray 0.4s ease;
+}
+
+.viz-gauge-center {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 2px;
+  text-align: center;
+}
+
+.viz-gauge-value {
+  font-size: 26px;
+  font-weight: 600;
+  color: var(--text-strong);
+  line-height: 1;
+  font-variant-numeric: proportional-nums;
+}
+
+.viz-gauge-label {
+  margin-top: 4px;
+  color: var(--text-muted);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.viz-gauge-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  justify-content: space-around;
+}
