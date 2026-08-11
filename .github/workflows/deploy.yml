@@ -32,7 +32,13 @@ jobs:
       # Deploy only what passes.
       - run: npm run lint
       - run: npm test
+      # Sync is opt-in and reads these at build time (see data/supabaseClient.ts).
+      # Left unset, the app builds and runs exactly as before — no repo
+      # secrets required until sync is actually turned on.
       - run: npm run build
+        env:
+          VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
 
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3

@@ -22,6 +22,19 @@ export interface CycleEntryInput {
   symptoms: { symptom: Symptom; severity: Severity }[]
 }
 
+export type SyncStatus =
+  | 'signed-out'
+  | 'checking'
+  | 'awaiting-first-sync-confirmation'
+  | 'syncing'
+  | 'synced'
+  | 'error'
+
+export interface AuthResult {
+  ok: boolean
+  error?: string
+}
+
 /**
  * `Omit<WorkoutLog, 'id'>` means "a WorkoutLog without the id field" — the
  * store generates ids so pages never have to.
@@ -52,6 +65,20 @@ export interface AppState extends AppData {
   /** Replaces everything, for importing a previously exported file. */
   replaceAllData: (data: AppData) => void
   resetAll: () => void
+
+  // ---------- Sync (opt-in, see data/sync.ts) ----------
+
+  /** False when this deployment has no Supabase project wired up at all. */
+  syncConfigured: boolean
+  session: { userId: string; email: string } | null
+  syncStatus: SyncStatus
+  syncError: string | null
+  lastSyncedAt: string | null
+  signUp: (email: string, password: string) => Promise<AuthResult>
+  signIn: (email: string, password: string) => Promise<AuthResult>
+  signOut: () => Promise<void>
+  /** First sync only: uploads this device's current data after the user explicitly agrees to it. */
+  confirmFirstSync: () => Promise<void>
 }
 
 export const AppContext = createContext<AppState>({
@@ -70,6 +97,15 @@ export const AppContext = createContext<AppState>({
   symptomsOn: () => [],
   replaceAllData: () => {},
   resetAll: () => {},
+  syncConfigured: false,
+  session: null,
+  syncStatus: 'signed-out',
+  syncError: null,
+  lastSyncedAt: null,
+  signUp: async () => ({ ok: false, error: 'Not available.' }),
+  signIn: async () => ({ ok: false, error: 'Not available.' }),
+  signOut: async () => {},
+  confirmFirstSync: async () => {},
 })
 
 /** Use this in any page: const { profile, addMealLog } = useApp() */

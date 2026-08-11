@@ -15,7 +15,30 @@ import * as s from '../ui/styles'
 
 export default function Settings() {
   const app = useApp()
-  const { profile, saveProfile, replaceAllData, resetAll, reminders, setReminders } = app
+  const {
+    profile,
+    saveProfile,
+    replaceAllData,
+    resetAll,
+    reminders,
+    setReminders,
+    syncConfigured,
+    session,
+    syncStatus,
+    syncError,
+    lastSyncedAt,
+    signUp,
+    signIn,
+    signOut,
+    confirmFirstSync,
+  } = app
+
+  const [authMode, setAuthMode] = useState<'sign-in' | 'sign-up'>('sign-in')
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [authError, setAuthError] = useState('')
+  const [authBusy, setAuthBusy] = useState(false)
+  const [confirmSyncBusy, setConfirmSyncBusy] = useState(false)
 
   // Destructive and replacing actions both need a deliberate second click.
   const [confirmingDelete, setConfirmingDelete] = useState(false)
@@ -95,6 +118,27 @@ export default function Settings() {
     setSavedKey('')
   }
 
+  async function handleAuthSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    setAuthError('')
+    setAuthBusy(true)
+
+    const result = authMode === 'sign-up' ? await signUp(email, password) : await signIn(email, password)
+
+    if (!result.ok) {
+      setAuthError(result.error ?? 'Something went wrong.')
+    } else {
+      setPassword('')
+    }
+    setAuthBusy(false)
+  }
+
+  async function handleConfirmFirstSync() {
+    setConfirmSyncBusy(true)
+    await confirmFirstSync()
+    setConfirmSyncBusy(false)
+  }
+
   function handleDelete() {
     // The key lives outside AppData, so resetAll cannot reach it. Deleting
     // "everything" has to mean everything.
@@ -154,14 +198,21 @@ export default function Settings() {
       <div style={s.card}>
         <h2>Where your data lives</h2>
         <p>
-          On this device only, in this browser's storage. It is never uploaded,
-          there are no accounts, and there is no analytics watching what you
-          log.
+          On this device, in this browser's storage, always. There is no
+          analytics watching what you log.
+          {syncConfigured && (
+            <>
+              {' '}
+              {session
+                ? "You've turned on sync below, so a copy also lives in your account."
+                : 'Accounts are optional — see Sync below if you want one.'}
+            </>
+          )}
         </p>
         <p style={s.muted}>
-          The flip side: clearing your browser data deletes it too. Download a
-          PDF if you want a copy to keep — it's for reading, not for restoring;
-          see Import below for that.
+          The flip side: clearing your browser data deletes the local copy.
+          Download a PDF if you want a copy to keep — it's for reading, not
+          for restoring; see Import below for that.
         </p>
         <ul style={s.list}>
           {counts.map((row) => (
@@ -172,6 +223,117 @@ export default function Settings() {
           ))}
         </ul>
       </div>
+
+      {syncConfigured && (
+        <div style={s.card}>
+          <h2 id="syncHeading">Sync across devices</h2>
+
+          {session ? (
+            <>
+              <p>
+                Signed in as <strong>{session.email}</strong>.
+              </p>
+              {syncStatus === 'awaiting-first-sync-confirmation' && (
+                <div style={s.cardDanger}>
+                  <p>
+                    <strong>
+                      This uploads everything currently on this device to your
+                      account, so it can sync to your other devices.
+                    </strong>{' '}
+                    Nothing has left this device yet.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={handleConfirmFirstSync}
+                    disabled={confirmSyncBusy}
+                  >
+                    {confirmSyncBusy ? 'Uploading…' : 'Upload and start syncing'}
+                  </button>
+                </div>
+              )}
+              {syncStatus === 'checking' && <p style={s.muted}>Checking for your other devices…</p>}
+              {syncStatus === 'syncing' && <p style={s.muted}>Syncing…</p>}
+              {syncStatus === 'synced' && (
+                <p style={s.muted}>
+                  {lastSyncedAt
+                    ? `Last synced ${new Date(lastSyncedAt).toLocaleTimeString()}.`
+                    : 'Synced.'}
+                </p>
+              )}
+              {syncStatus === 'error' && syncError && (
+                <p style={s.dangerText}>{syncError}</p>
+              )}
+              <button type="button" data-variant="quiet" onClick={signOut}>
+                Sign out
+              </button>
+            </>
+          ) : (
+            <>
+              <p style={s.muted}>
+                Optional. Creates an account so the same data shows up on every
+                device you sign into — nothing here works unless you turn it
+                on.
+              </p>
+              <div style={s.cardDanger}>
+                <p>
+                  <strong>Signing in means your data leaves this device</strong>{' '}
+                  and lives in your account too, so it can sync elsewhere. If you
+                  never sign in, nothing changes from how the app has always
+                  worked.
+                </p>
+              </div>
+              <form onSubmit={handleAuthSubmit}>
+                <div style={s.row}>
+                  <label htmlFor="syncEmail">Email</label>
+                  <br />
+                  <input
+                    id="syncEmail"
+                    type="email"
+                    autoComplete="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    style={s.input}
+                  />
+                </div>
+                <div style={s.row}>
+                  <label htmlFor="syncPassword">Password</label>
+                  <br />
+                  <input
+                    id="syncPassword"
+                    type="password"
+                    autoComplete={authMode === 'sign-up' ? 'new-password' : 'current-password'}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    style={s.input}
+                  />
+                </div>
+                {authError && <p style={s.dangerText}>{authError}</p>}
+                <p style={{ marginTop: '12px' }}>
+                  <button type="submit" disabled={authBusy || !email || !password}>
+                    {authBusy
+                      ? 'Working…'
+                      : authMode === 'sign-up'
+                        ? 'Create account'
+                        : 'Sign in'}
+                  </button>{' '}
+                  <button
+                    type="button"
+                    data-variant="link"
+                    onClick={() => {
+                      setAuthMode(authMode === 'sign-up' ? 'sign-in' : 'sign-up')
+                      setAuthError('')
+                    }}
+                  >
+                    {authMode === 'sign-up'
+                      ? 'Already have an account? Sign in'
+                      : 'New here? Create an account'}
+                  </button>
+                </p>
+              </form>
+            </>
+          )}
+        </div>
+      )}
 
       <div style={s.card}>
         <h2>Export</h2>
@@ -207,8 +369,8 @@ export default function Settings() {
       <div style={s.cardDanger}>
         <h2>Delete everything</h2>
         <p style={s.muted}>
-          Wipes your profile and every log from this device. This cannot be
-          undone.
+          Wipes your profile and every log from this device{session ? ' and your account' : ''}.
+          This cannot be undone.
         </p>
         {confirmingDelete ? (
           <>

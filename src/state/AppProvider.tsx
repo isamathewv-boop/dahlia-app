@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import type {
   AppData,
@@ -12,21 +12,141 @@ import type {
 } from '../types'
 import { clearData, createEmptyData, loadData, saveData } from '../data/storage'
 import { newId } from '../data/date'
+import { syncConfigured as isSyncConfigured } from '../data/supabaseClient'
+import {
+  currentSession,
+  decideMerge,
+  deleteRemote,
+  getLocalUpdatedAt,
+  pullRemote,
+  pushRemote,
+  signIn as syncSignIn,
+  signOut as syncSignOut,
+  signUp as syncSignUp,
+  touchLocalUpdatedAt,
+} from '../data/sync'
 import { AppContext } from './AppContext'
-import type { CycleEntryInput } from './AppContext'
+import type { AuthResult, CycleEntryInput, SyncStatus } from './AppContext'
+
+/** How long to wait after the last edit before pushing to the sync server. */
+const PUSH_DEBOUNCE_MS = 2000
 
 export default function AppProvider({ children }: { children: ReactNode }) {
   const [data, setData] = useState<AppData>(loadData)
+
+  const [session, setSession] = useState<{ userId: string; email: string } | null>(null)
+  const [syncStatus, setSyncStatus] = useState<SyncStatus>('signed-out')
+  const [syncError, setSyncError] = useState<string | null>(null)
+  const [lastSyncedAt, setLastSyncedAt] = useState<string | null>(null)
+  const pushTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   /** Every log helper goes through here. */
   function update(change: (current: AppData) => AppData) {
     setData((current) => change(current))
   }
 
-  // Persist on every change.
+  // Persist locally on every change — this stays the fast, always-available
+  // source of truth regardless of sync state.
   useEffect(() => {
     saveData(data)
+    touchLocalUpdatedAt()
   }, [data])
+
+  // Once signed in and settled, mirror local changes to the sync server,
+  // debounced so a burst of edits (typing in a form) doesn't fire a request
+  // per keystroke.
+  useEffect(() => {
+    if (!session || syncStatus !== 'synced') return
+
+    if (pushTimer.current) clearTimeout(pushTimer.current)
+    pushTimer.current = setTimeout(async () => {
+      const ok = await pushRemote(session.userId, data)
+      setLastSyncedAt(ok ? new Date().toISOString() : lastSyncedAt)
+      if (!ok) setSyncError('Could not reach the sync server. Your changes are saved on this device.')
+    }, PUSH_DEBOUNCE_MS)
+
+    return () => {
+      if (pushTimer.current) clearTimeout(pushTimer.current)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [data, session, syncStatus])
+
+  // Pick up an existing session (already signed in on this device from a
+  // previous visit) and pull whatever the other device last saved.
+  useEffect(() => {
+    if (!isSyncConfigured()) return
+    currentSession()
+      .then((existing) => {
+        if (existing?.user.email) {
+          runMergeCheck(existing.user.id, existing.user.email)
+        }
+      })
+      .catch(() => {
+        // Unreachable or misconfigured — the app carries on local-only.
+      })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  async function runMergeCheck(userId: string, email: string) {
+    setSyncStatus('checking')
+    setSyncError(null)
+    setSession({ userId, email })
+
+    const remote = await pullRemote(userId)
+    const decision = decideMerge(remote, getLocalUpdatedAt())
+
+    if (decision.action === 'first-sync') {
+      setSyncStatus('awaiting-first-sync-confirmation')
+      return
+    }
+
+    if (decision.action === 'use-remote') {
+      setData(decision.data)
+      touchLocalUpdatedAt()
+    } else {
+      await pushRemote(userId, data)
+    }
+    setSyncStatus('synced')
+    setLastSyncedAt(new Date().toISOString())
+  }
+
+  async function signUp(email: string, password: string): Promise<AuthResult> {
+    const result = await syncSignUp(email, password)
+    if (result.ok) {
+      const opened = await currentSession()
+      // Supabase may require email confirmation before a session exists —
+      // if so there is nothing to sync yet, and Settings explains why.
+      if (opened) await runMergeCheck(opened.user.id, opened.user.email ?? email)
+    }
+    return result
+  }
+
+  async function signIn(email: string, password: string): Promise<AuthResult> {
+    const result = await syncSignIn(email, password)
+    if (result.ok) {
+      const opened = await currentSession()
+      if (opened) await runMergeCheck(opened.user.id, opened.user.email ?? email)
+    }
+    return result
+  }
+
+  async function signOut() {
+    await syncSignOut()
+    setSession(null)
+    setSyncStatus('signed-out')
+    setSyncError(null)
+    setLastSyncedAt(null)
+  }
+
+  async function confirmFirstSync() {
+    if (!session) return
+    setSyncStatus('syncing')
+    const ok = await pushRemote(session.userId, data)
+    touchLocalUpdatedAt()
+    setSyncStatus(ok ? 'synced' : 'error')
+    if (ok) setLastSyncedAt(new Date().toISOString())
+    else setSyncError('Could not reach the sync server. Try again from Settings.')
+  }
 
   function saveProfile(profile: UserProfile) {
     update((current) => ({ ...current, profile }))
@@ -131,6 +251,7 @@ export default function AppProvider({ children }: { children: ReactNode }) {
   function resetAll() {
     clearData()
     setData(createEmptyData())
+    if (session) deleteRemote(session.userId)
   }
 
   return (
@@ -151,6 +272,15 @@ export default function AppProvider({ children }: { children: ReactNode }) {
         symptomsOn,
         replaceAllData,
         resetAll,
+        syncConfigured: isSyncConfigured(),
+        session,
+        syncStatus,
+        syncError,
+        lastSyncedAt,
+        signUp,
+        signIn,
+        signOut,
+        confirmFirstSync,
       }}
     >
       {children}
