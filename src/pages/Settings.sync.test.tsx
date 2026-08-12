@@ -63,6 +63,25 @@ describe('Settings — sync (Supabase configured)', () => {
     expect(await screen.findByText('Wrong email or password.')).toBeTruthy()
   })
 
+  it('tells the user to check their email when Supabase holds the session for confirmation', async () => {
+    // signUp succeeds, but no session exists yet — Supabase's default when
+    // email confirmation is required. currentSession stays null throughout.
+    vi.mocked(sync.signUp).mockResolvedValue({ ok: true })
+
+    seed({ profile: makeProfile() })
+    const { user } = renderPage(<Settings />)
+
+    await user.click(screen.getByRole('button', { name: 'New here? Create an account' }))
+    await user.type(screen.getByLabelText('Email'), 'sam@example.com')
+    await user.type(screen.getByLabelText('Password'), 'hunter2!')
+    await user.click(screen.getByRole('button', { name: 'Create account' }))
+
+    expect(await screen.findByText(/confirmation link/)).toBeTruthy()
+    expect(screen.getByText('sam@example.com')).toBeTruthy()
+    // Still on the sign-up form — nothing to sync yet.
+    expect(screen.getByRole('button', { name: 'Create account' })).toBeTruthy()
+  })
+
   it('asks before uploading local data on a brand new account (first sync)', async () => {
     vi.mocked(sync.signUp).mockResolvedValue({ ok: true })
     vi.mocked(sync.pullRemote).mockResolvedValue(null)

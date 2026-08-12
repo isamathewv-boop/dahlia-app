@@ -33,6 +33,8 @@ export type SyncStatus =
 export interface AuthResult {
   ok: boolean
   error?: string
+  /** Sign-up succeeded but Supabase is holding the session until the user confirms their email. */
+  needsConfirmation?: boolean
 }
 
 /**

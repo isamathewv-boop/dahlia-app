@@ -112,12 +112,14 @@ export default function AppProvider({ children }: { children: ReactNode }) {
 
   async function signUp(email: string, password: string): Promise<AuthResult> {
     const result = await syncSignUp(email, password)
-    if (result.ok) {
-      const opened = await currentSession()
-      // Supabase may require email confirmation before a session exists —
-      // if so there is nothing to sync yet, and Settings explains why.
-      if (opened) await runMergeCheck(opened.user.id, opened.user.email ?? email)
-    }
+    if (!result.ok) return result
+
+    const opened = await currentSession()
+    // Supabase may require email confirmation before a session exists — if
+    // so there is nothing to sync yet, and Settings tells the user why.
+    if (!opened) return { ok: true, needsConfirmation: true }
+
+    await runMergeCheck(opened.user.id, opened.user.email ?? email)
     return result
   }
 

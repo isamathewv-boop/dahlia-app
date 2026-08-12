@@ -37,6 +37,7 @@ export default function Settings() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [authError, setAuthError] = useState('')
+  const [needsConfirmation, setNeedsConfirmation] = useState(false)
   const [authBusy, setAuthBusy] = useState(false)
   const [confirmSyncBusy, setConfirmSyncBusy] = useState(false)
 
@@ -121,12 +122,16 @@ export default function Settings() {
   async function handleAuthSubmit(e: React.FormEvent) {
     e.preventDefault()
     setAuthError('')
+    setNeedsConfirmation(false)
     setAuthBusy(true)
 
     const result = authMode === 'sign-up' ? await signUp(email, password) : await signIn(email, password)
 
     if (!result.ok) {
       setAuthError(result.error ?? 'Something went wrong.')
+    } else if (result.needsConfirmation) {
+      setNeedsConfirmation(true)
+      setPassword('')
     } else {
       setPassword('')
     }
@@ -308,6 +313,13 @@ export default function Settings() {
                   />
                 </div>
                 {authError && <p style={s.dangerText}>{authError}</p>}
+                {needsConfirmation && (
+                  <p>
+                    Account created. Check <strong>{email}</strong> for a
+                    confirmation link, then sign in here once you've clicked
+                    it.
+                  </p>
+                )}
                 <p style={{ marginTop: '12px' }}>
                   <button type="submit" disabled={authBusy || !email || !password}>
                     {authBusy
@@ -322,6 +334,7 @@ export default function Settings() {
                     onClick={() => {
                       setAuthMode(authMode === 'sign-up' ? 'sign-in' : 'sign-up')
                       setAuthError('')
+                      setNeedsConfirmation(false)
                     }}
                   >
                     {authMode === 'sign-up'
