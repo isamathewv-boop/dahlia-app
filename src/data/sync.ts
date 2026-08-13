@@ -28,6 +28,19 @@ function describeAuthError(message: string): string {
   return 'Could not reach the sync server. Check your connection and try again.'
 }
 
+/**
+ * Where Supabase should send the user back to after clicking an emailed
+ * link. Built from the page actually running rather than a dashboard
+ * setting, so it's correct on localhost, a preview deploy, or production
+ * without relying on the Supabase "Site URL" being configured right. Still
+ * needs to be added to Authentication -> URL Configuration -> Redirect URLs
+ * in the Supabase dashboard, or Supabase rejects it and falls back to the
+ * Site URL anyway.
+ */
+function redirectUrl(hashRoute: string): string {
+  return `${window.location.origin}${window.location.pathname}#${hashRoute}`
+}
+
 /*
  * Every function below returns a typed result rather than throwing — a
  * dropped connection or a misconfigured project must degrade to "sync
@@ -37,7 +50,11 @@ function describeAuthError(message: string): string {
 export async function signUp(email: string, password: string): Promise<AuthResult> {
   if (!supabase) return { ok: false, error: NOT_CONFIGURED }
   try {
-    const { error } = await supabase.auth.signUp({ email, password })
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: { emailRedirectTo: redirectUrl('/settings') },
+    })
     return error ? { ok: false, error: describeAuthError(error.message) } : { ok: true }
   } catch {
     return { ok: false, error: 'Could not reach the sync server. Check your connection and try again.' }
@@ -62,8 +79,9 @@ export async function signIn(email: string, password: string): Promise<AuthResul
 export async function requestPasswordReset(email: string): Promise<AuthResult> {
   if (!supabase) return { ok: false, error: NOT_CONFIGURED }
   try {
-    const redirectTo = `${window.location.origin}${window.location.pathname}#/reset-password`
-    const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo })
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: redirectUrl('/reset-password'),
+    })
     return error ? { ok: false, error: describeAuthError(error.message) } : { ok: true }
   } catch {
     return { ok: false, error: 'Could not reach the sync server. Check your connection and try again.' }
