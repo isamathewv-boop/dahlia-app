@@ -20,10 +20,12 @@ import {
   getLocalUpdatedAt,
   pullRemote,
   pushRemote,
+  requestPasswordReset as syncRequestPasswordReset,
   signIn as syncSignIn,
   signOut as syncSignOut,
   signUp as syncSignUp,
   touchLocalUpdatedAt,
+  updatePassword as syncUpdatePassword,
 } from '../data/sync'
 import { AppContext } from './AppContext'
 import type { AuthResult, CycleEntryInput, SyncStatus } from './AppContext'
@@ -148,6 +150,21 @@ export default function AppProvider({ children }: { children: ReactNode }) {
     setSyncStatus(ok ? 'synced' : 'error')
     if (ok) setLastSyncedAt(new Date().toISOString())
     else setSyncError('Could not reach the sync server. Try again from Settings.')
+  }
+
+  async function requestPasswordReset(email: string): Promise<AuthResult> {
+    return syncRequestPasswordReset(email)
+  }
+
+  async function updatePassword(newPassword: string): Promise<AuthResult> {
+    const result = await syncUpdatePassword(newPassword)
+    if (result.ok) {
+      // Clicking the reset link opens a recovery session — treat it like a
+      // fresh sign-in so this device merges/syncs the same as any other.
+      const opened = await currentSession()
+      if (opened?.user.email) await runMergeCheck(opened.user.id, opened.user.email)
+    }
+    return result
   }
 
   function saveProfile(profile: UserProfile) {
@@ -283,6 +300,8 @@ export default function AppProvider({ children }: { children: ReactNode }) {
         signIn,
         signOut,
         confirmFirstSync,
+        requestPasswordReset,
+        updatePassword,
       }}
     >
       {children}

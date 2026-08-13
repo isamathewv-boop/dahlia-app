@@ -31,6 +31,7 @@ export default function Settings() {
     signIn,
     signOut,
     confirmFirstSync,
+    requestPasswordReset,
   } = app
 
   const [authMode, setAuthMode] = useState<'sign-in' | 'sign-up'>('sign-in')
@@ -40,6 +41,8 @@ export default function Settings() {
   const [needsConfirmation, setNeedsConfirmation] = useState(false)
   const [authBusy, setAuthBusy] = useState(false)
   const [confirmSyncBusy, setConfirmSyncBusy] = useState(false)
+  const [resetSent, setResetSent] = useState(false)
+  const [resetBusy, setResetBusy] = useState(false)
 
   // Destructive and replacing actions both need a deliberate second click.
   const [confirmingDelete, setConfirmingDelete] = useState(false)
@@ -136,6 +139,23 @@ export default function Settings() {
       setPassword('')
     }
     setAuthBusy(false)
+  }
+
+  async function handleForgotPassword() {
+    if (!email) {
+      setAuthError('Type your email above first.')
+      return
+    }
+    setAuthError('')
+    setResetBusy(true)
+    const result = await requestPasswordReset(email)
+    setResetBusy(false)
+
+    if (!result.ok) {
+      setAuthError(result.error ?? 'Something went wrong.')
+    } else {
+      setResetSent(true)
+    }
   }
 
   async function handleConfirmFirstSync() {
@@ -320,6 +340,13 @@ export default function Settings() {
                     it.
                   </p>
                 )}
+                {resetSent && (
+                  <p>
+                    If an account exists for <strong>{email}</strong>, a reset
+                    link is on its way — it'll bring you back here to set a
+                    new password.
+                  </p>
+                )}
                 <p style={{ marginTop: '12px' }}>
                   <button type="submit" disabled={authBusy || !email || !password}>
                     {authBusy
@@ -335,12 +362,26 @@ export default function Settings() {
                       setAuthMode(authMode === 'sign-up' ? 'sign-in' : 'sign-up')
                       setAuthError('')
                       setNeedsConfirmation(false)
+                      setResetSent(false)
                     }}
                   >
                     {authMode === 'sign-up'
                       ? 'Already have an account? Sign in'
                       : 'New here? Create an account'}
                   </button>
+                  {authMode === 'sign-in' && (
+                    <>
+                      {' · '}
+                      <button
+                        type="button"
+                        data-variant="link"
+                        onClick={handleForgotPassword}
+                        disabled={resetBusy}
+                      >
+                        {resetBusy ? 'Sending…' : 'Forgot password?'}
+                      </button>
+                    </>
+                  )}
                 </p>
               </form>
             </>

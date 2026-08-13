@@ -22,6 +22,7 @@ vi.mock('../data/sync', async (importOriginal) => {
     pullRemote: vi.fn(async () => null),
     pushRemote: vi.fn(async () => true),
     deleteRemote: vi.fn(async () => true),
+    requestPasswordReset: vi.fn(),
   }
 })
 
@@ -39,6 +40,7 @@ describe('Settings — sync (Supabase configured)', () => {
     vi.mocked(sync.pullRemote).mockReset().mockResolvedValue(null)
     vi.mocked(sync.pushRemote).mockReset().mockResolvedValue(true)
     vi.mocked(sync.deleteRemote).mockReset().mockResolvedValue(true)
+    vi.mocked(sync.requestPasswordReset).mockReset()
   })
 
   it('shows a sign-in form when nobody is signed in', () => {
@@ -61,6 +63,38 @@ describe('Settings — sync (Supabase configured)', () => {
     await user.click(screen.getByRole('button', { name: 'Sign in' }))
 
     expect(await screen.findByText('Wrong email or password.')).toBeTruthy()
+  })
+
+  it('only offers "Forgot password?" while signing in, not while signing up', async () => {
+    seed({ profile: makeProfile() })
+    const { user } = renderPage(<Settings />)
+
+    expect(screen.getByRole('button', { name: 'Forgot password?' })).toBeTruthy()
+
+    await user.click(screen.getByRole('button', { name: 'New here? Create an account' }))
+    expect(screen.queryByRole('button', { name: 'Forgot password?' })).toBeNull()
+  })
+
+  it('asks for an email before sending a reset link', async () => {
+    seed({ profile: makeProfile() })
+    const { user } = renderPage(<Settings />)
+
+    await user.click(screen.getByRole('button', { name: 'Forgot password?' }))
+
+    expect(screen.getByText('Type your email above first.')).toBeTruthy()
+    expect(sync.requestPasswordReset).not.toHaveBeenCalled()
+  })
+
+  it('confirms a reset link was requested without revealing whether the account exists', async () => {
+    vi.mocked(sync.requestPasswordReset).mockResolvedValue({ ok: true })
+    seed({ profile: makeProfile() })
+    const { user } = renderPage(<Settings />)
+
+    await user.type(screen.getByLabelText('Email'), 'sam@example.com')
+    await user.click(screen.getByRole('button', { name: 'Forgot password?' }))
+
+    expect(sync.requestPasswordReset).toHaveBeenCalledWith('sam@example.com')
+    expect(await screen.findByText(/reset link is on its way/)).toBeTruthy()
   })
 
   it('tells the user to check their email when Supabase holds the session for confirmation', async () => {

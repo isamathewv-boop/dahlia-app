@@ -54,6 +54,49 @@ export async function signIn(email: string, password: string): Promise<AuthResul
   }
 }
 
+/**
+ * Sends a reset link to the given email if an account exists for it.
+ * Deliberately doesn't reveal whether the email is registered — Supabase
+ * itself returns success either way, so the UI copy should stay generic.
+ */
+export async function requestPasswordReset(email: string): Promise<AuthResult> {
+  if (!supabase) return { ok: false, error: NOT_CONFIGURED }
+  try {
+    const redirectTo = `${window.location.origin}${window.location.pathname}#/reset-password`
+    const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo })
+    return error ? { ok: false, error: describeAuthError(error.message) } : { ok: true }
+  } catch {
+    return { ok: false, error: 'Could not reach the sync server. Check your connection and try again.' }
+  }
+}
+
+/** Only works while the recovery session from a reset-link click is active — see pages/ResetPassword.tsx. */
+export async function updatePassword(newPassword: string): Promise<AuthResult> {
+  if (!supabase) return { ok: false, error: NOT_CONFIGURED }
+  try {
+    const { error } = await supabase.auth.updateUser({ password: newPassword })
+    return error ? { ok: false, error: describeAuthError(error.message) } : { ok: true }
+  } catch {
+    return { ok: false, error: 'Could not reach the sync server. Check your connection and try again.' }
+  }
+}
+
+/**
+ * Fires when the client finishes processing a reset-link click. Supabase
+ * may process the link's token before this page has even mounted, so
+ * callers should also check currentSession() directly rather than relying
+ * on this alone — see ResetPassword.tsx.
+ */
+export function onPasswordRecovery(callback: () => void): () => void {
+  if (!supabase) return () => {}
+  const {
+    data: { subscription },
+  } = supabase.auth.onAuthStateChange((event) => {
+    if (event === 'PASSWORD_RECOVERY') callback()
+  })
+  return () => subscription.unsubscribe()
+}
+
 export async function signOut(): Promise<void> {
   if (!supabase) return
   try {

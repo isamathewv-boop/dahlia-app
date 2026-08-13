@@ -81,6 +81,9 @@ export interface AppState extends AppData {
   signOut: () => Promise<void>
   /** First sync only: uploads this device's current data after the user explicitly agrees to it. */
   confirmFirstSync: () => Promise<void>
+  requestPasswordReset: (email: string) => Promise<AuthResult>
+  /** Only works on the ResetPassword page, while a recovery session from an emailed link is active. */
+  updatePassword: (newPassword: string) => Promise<AuthResult>
 }
 
 export const AppContext = createContext<AppState>({
@@ -108,6 +111,8 @@ export const AppContext = createContext<AppState>({
   signIn: async () => ({ ok: false, error: 'Not available.' }),
   signOut: async () => {},
   confirmFirstSync: async () => {},
+  requestPasswordReset: async () => ({ ok: false, error: 'Not available.' }),
+  updatePassword: async () => ({ ok: false, error: 'Not available.' }),
 })
 
 /** Use this in any page: const { profile, addMealLog } = useApp() */

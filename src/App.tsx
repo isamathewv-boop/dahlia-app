@@ -7,6 +7,7 @@ import Diet from './pages/Diet'
 import Dahlia from './pages/Dahlia'
 import Progress from './pages/Progress'
 import Settings from './pages/Settings'
+import ResetPassword from './pages/ResetPassword'
 import ReminderBanner from './components/ReminderBanner'
 import ScrollToTop from './components/ScrollToTop'
 
@@ -49,6 +50,7 @@ function App() {
           <Route path="/dahlia" element={<Dahlia />} />
           <Route path="/progress" element={<Progress />} />
           <Route path="/settings" element={<Settings />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
         </Routes>
       </main>
     </div>
